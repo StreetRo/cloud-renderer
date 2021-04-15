@@ -1,2 +1,2 @@
 # cloud-renderer
-UB Berkeley CS184 Final Project
+UC Berkeley CS184 Final Project
