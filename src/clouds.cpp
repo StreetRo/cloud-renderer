@@ -218,7 +218,9 @@ void Clouds::init() {
 
 bool Clouds::isAlive() { return is_alive; }
 
-void Clouds::update( double dt ) {  }
+void Clouds::update( double dt ) {
+  fb->setValue( (int) ( 1. / dt ) );
+}
 
 void Clouds::drawContents() {
   glEnable(GL_DEPTH_TEST);
@@ -546,5 +548,25 @@ void Clouds::initGUI(Screen *screen) {
     s->setFinalCallback([&](float value) {
       slider = value;
     });
+  }
+
+  new Label(window, "Statistics", "sans-bold");
+  {
+    Widget *panel = new Widget(window);
+    GridLayout *layout =
+        new GridLayout(Orientation::Horizontal, 2, Alignment::Middle, 5, 5);
+    layout->setColAlignment({Alignment::Maximum, Alignment::Fill});
+    layout->setSpacing(0, 10);
+    panel->setLayout(layout);
+
+    new Label(panel, "FPS :", "sans-bold");
+
+    fb = new FloatBox<double>(panel);
+    fb->setEditable(false);
+    fb->setFixedSize(Vector2i(100, 20));
+    fb->setFontSize(14);
+    fb->setValue( 0 );
+    fb->setUnits("fps");
+    fb->setSpinnable(false);
   }
 }

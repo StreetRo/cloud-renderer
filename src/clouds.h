@@ -53,6 +53,7 @@ private:
   bool button1 = true;
   float param1 = 0.0;
   long slider = 0;
+  FloatBox<double>* fb;
 
   // Default simulation values
   int frames_per_sec = 90;
