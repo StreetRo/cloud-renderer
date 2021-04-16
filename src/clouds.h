@@ -21,7 +21,8 @@ public:
   void init();
 
   virtual bool isAlive();
-  void update( double dt );
+  void update( double );
+  void updateGUI( double );
   virtual void drawContents();
 
   // Screen events

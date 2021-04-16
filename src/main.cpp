@@ -160,6 +160,63 @@ bool find_project_root(const std::vector<std::string>& search_paths, std::string
   return false;
 }
 
+void main_loop() {
+  // Main clock
+  double prev       = glfwGetTime(); // seconds
+  double lag        = 0.;
+  double frame_time = 1. / app->getFPS();
+  
+  // Render clock
+  double rend_prev = glfwGetTime(); // seconds
+  double avgFPS    = 0.;
+
+  while (!glfwWindowShouldClose(window)) {
+    double now = glfwGetTime();
+    double dt = now - prev;
+
+    lag += dt;
+
+    glfwPollEvents();
+
+    bool updated = false;
+    while ( lag >= frame_time ) {
+      app->update( dt );
+
+      avgFPS += 1. / dt;
+      avgFPS /= 2.;
+
+      lag -= frame_time;
+      updated = true;
+      prev = now;
+    }
+
+    if ( updated ) {
+      double now = glfwGetTime();
+      if ( now - rend_prev > 1 ) {
+        app->updateGUI( avgFPS );
+        rend_prev = now;
+      }
+
+      glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      app->drawContents();
+
+      // Draw nanogui
+      screen->drawWidgets();
+      screen->drawContents();
+
+      glfwSwapBuffers(window);
+    } else {
+      std::this_thread::sleep_for( std::chrono::milliseconds( (int) ( 1000 * ( frame_time - dt ) ) ) / 2. );
+    }
+
+    if (!app->isAlive()) {
+      glfwSetWindowShouldClose(window, 1);
+    }
+  }
+}
+
 int main( int argc, char **argv ) {
   std::vector<std::string> search_paths = {
     ".",
@@ -209,47 +266,7 @@ int main( int argc, char **argv ) {
   // Attach callbacks to the GLFW window
   setGLFWCallbacks();
 
-  double prev = glfwGetTime(); // seconds
-  double lag  = 0.;
-
-  double frame_time = 1. / app->getFPS();
-  
-  while (!glfwWindowShouldClose(window)) {
-    double now = glfwGetTime();
-    double dt = now - prev;
-
-    lag += dt;
-
-    glfwPollEvents();
-
-    bool updated = false;
-    while ( lag >= frame_time ) {
-      app->update( dt );
-
-      lag -= frame_time;
-      updated = true;
-      prev = now;
-    }
-
-    if ( updated ) {
-      glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      app->drawContents();
-
-      // Draw nanogui
-      screen->drawContents();
-      screen->drawWidgets();
-
-      glfwSwapBuffers(window);
-    } else {
-      std::this_thread::sleep_for( std::chrono::milliseconds( (int) ( frame_time - dt ) ) );
-    }
-
-    if (!app->isAlive()) {
-      glfwSetWindowShouldClose(window, 1);
-    }
-  }
+  main_loop();
 
   return 0;
 }

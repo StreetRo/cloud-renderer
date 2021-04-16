@@ -218,8 +218,11 @@ void Clouds::init() {
 
 bool Clouds::isAlive() { return is_alive; }
 
-void Clouds::update( double dt ) {
-  fb->setValue( (int) ( 1. / dt ) );
+void Clouds::update( double dt ) { }
+
+void Clouds::updateGUI( double avgFPS ) {
+  // Update GUI
+  fb->setValue( (int) avgFPS );
 }
 
 void Clouds::drawContents() {
@@ -242,8 +245,6 @@ void Clouds::drawContents() {
 
   shader.setUniform("u_model", model);
   shader.setUniform("u_view_projection", viewProjection);
-
-
 
   switch (active_shader.type_hint) {
   case WIREFRAME:
