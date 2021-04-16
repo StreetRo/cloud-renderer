@@ -207,36 +207,40 @@ int main( int argc, char **argv ) {
   // Attach callbacks to the GLFW window
   setGLFWCallbacks();
 
-  double prev = glfwGetTime();
+  double prev = glfwGetTime(); // seconds
   double lag  = 0.;
 
   double update_time = 1. / app->getFPS();
   
   while (!glfwWindowShouldClose(window)) {
     double now = glfwGetTime();
-    double elapsed = now - prev;
+    double dt = now - prev;
     prev = now;
 
-    lag += elapsed;
+    lag += dt;
 
     glfwPollEvents();
 
+    bool updated = false;
     while ( lag >= update_time ) {
-      app->update();
+      app->update( dt );
 
       lag -= update_time;
+      updated = true;
     }
 
-    glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if ( updated ) {
+      glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    app->drawContents();
+      app->drawContents();
 
-    // Draw nanogui
-    screen->drawContents();
-    screen->drawWidgets();
+      // Draw nanogui
+      screen->drawContents();
+      screen->drawWidgets();
 
-    glfwSwapBuffers(window);
+      glfwSwapBuffers(window);
+    }
 
     if (!app->isAlive()) {
       glfwSetWindowShouldClose(window, 1);

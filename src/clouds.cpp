@@ -218,7 +218,7 @@ void Clouds::init() {
 
 bool Clouds::isAlive() { return is_alive; }
 
-void Clouds::update() {  }
+void Clouds::update( double dt ) {  }
 
 void Clouds::drawContents() {
   glEnable(GL_DEPTH_TEST);
