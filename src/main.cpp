@@ -196,21 +196,24 @@ void main_loop() {
         rend_prev = rend_now;
       }
 
+      /* Begin OpenGL Render */
       glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      {
+        app->drawContents();
 
-      app->drawContents();
-
-      // Draw nanogui
-      screen->drawWidgets();
-      screen->drawContents();
-
+        // Draw nanogui
+        screen->drawWidgets();
+        screen->drawContents();
+      }
       glfwSwapBuffers(window);
+      /* End OpenGL Render */
 
       avg_fps += 1. / dt;
       avg_fps /= 2.;
     } else {
-      std::this_thread::sleep_for( std::chrono::milliseconds( (int) ( 1000 * ( frame_time - dt ) ) ) / 2. );
+      double ms = 1000 * ( frame_time - dt );
+      std::this_thread::sleep_for( std::chrono::milliseconds( (int) ms ) / 2. );
     }
 
     if (!app->isAlive()) {
