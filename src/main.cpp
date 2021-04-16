@@ -210,23 +210,23 @@ int main( int argc, char **argv ) {
   double prev = glfwGetTime(); // seconds
   double lag  = 0.;
 
-  double update_time = 1. / app->getFPS();
+  double frame_time = 1. / app->getFPS();
   
   while (!glfwWindowShouldClose(window)) {
     double now = glfwGetTime();
     double dt = now - prev;
-    prev = now;
 
     lag += dt;
 
     glfwPollEvents();
 
     bool updated = false;
-    while ( lag >= update_time ) {
+    while ( lag >= frame_time ) {
       app->update( dt );
 
-      lag -= update_time;
+      lag -= frame_time;
       updated = true;
+      prev = now;
     }
 
     if ( updated ) {
