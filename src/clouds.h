@@ -54,7 +54,7 @@ private:
   bool button1 = true;
   float param1 = 0.0;
   long slider = 0;
-  FloatBox<float>* fb;
+  IntBox<int>* fps_box;
 
   // Default simulation values
   int frames_per_sec = 90;

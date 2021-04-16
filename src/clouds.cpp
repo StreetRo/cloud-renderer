@@ -222,7 +222,7 @@ void Clouds::update( double dt ) { }
 
 void Clouds::updateGUI( double avgFPS ) {
   // Update GUI
-  fb->setValue( (int) std::ceil( avgFPS ) );
+  fps_box->setValue( std::ceil( avgFPS ) );
 }
 
 void Clouds::drawContents() {
@@ -560,14 +560,14 @@ void Clouds::initGUI(Screen *screen) {
     layout->setSpacing(0, 10);
     panel->setLayout(layout);
 
-    new Label(panel, "FPS :", "sans-bold");
+    new Label(panel, "AVG FPS :", "sans-bold");
 
-    fb = new FloatBox<float>(panel);
-    fb->setEditable(false);
-    fb->setFixedSize(Vector2i(100, 20));
-    fb->setFontSize(14);
-    fb->setValue( 0 );
-    fb->setUnits("fps");
-    fb->setSpinnable(false);
+    fps_box = new IntBox<int>(panel);
+    fps_box->setEditable(false);
+    fps_box->setFixedSize(Vector2i(100, 20));
+    fps_box->setFontSize(14);
+    fps_box->setValue( 0 );
+    fps_box->setUnits("fps");
+    fps_box->setSpinnable(false);
   }
 }
