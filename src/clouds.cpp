@@ -167,6 +167,10 @@ Clouds::~Clouds() {
   glDeleteTextures(1, &m_gl_cubemap_tex);
 }
 
+int Clouds::getFPS() {
+  return frames_per_sec;
+}
+
 /**
  * Initializes the clouds simulation and spawns a new thread to separate
  * rendering from simulation.
@@ -213,6 +217,8 @@ void Clouds::init() {
 }
 
 bool Clouds::isAlive() { return is_alive; }
+
+void Clouds::update() {  }
 
 void Clouds::drawContents() {
   glEnable(GL_DEPTH_TEST);

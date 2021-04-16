@@ -21,6 +21,7 @@ public:
   void init();
 
   virtual bool isAlive();
+  void update();
   virtual void drawContents();
 
   // Screen events
@@ -32,6 +33,7 @@ public:
   virtual bool scrollCallbackEvent(double x, double y);
   virtual bool resizeCallbackEvent(int width, int height);
 
+  int getFPS();
 private:
   virtual void initGUI(Screen *screen);
   void drawWireframe(GLShader &shader);

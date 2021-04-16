@@ -207,8 +207,25 @@ int main( int argc, char **argv ) {
   // Attach callbacks to the GLFW window
   setGLFWCallbacks();
 
+  double prev = glfwGetTime();
+  double lag  = 0.;
+
+  double update_time = 1. / app->getFPS();
+  
   while (!glfwWindowShouldClose(window)) {
+    double now = glfwGetTime();
+    double elapsed = now - prev;
+    prev = now;
+
+    lag += elapsed;
+
     glfwPollEvents();
+
+    while ( lag >= update_time ) {
+      app->update();
+
+      lag -= update_time;
+    }
 
     glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
