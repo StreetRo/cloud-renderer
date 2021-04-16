@@ -562,7 +562,7 @@ void Clouds::initGUI(Screen *screen) {
 
     new Label(panel, "FPS :", "sans-bold");
 
-    fb = new FloatBox<double>(panel);
+    fb = new FloatBox<float>(panel);
     fb->setEditable(false);
     fb->setFixedSize(Vector2i(100, 20));
     fb->setFontSize(14);
