@@ -222,7 +222,7 @@ void Clouds::update( double dt ) { }
 
 void Clouds::updateGUI( double avgFPS ) {
   // Update GUI
-  fb->setValue( (int) avgFPS );
+  fb->setValue( (int) std::ceil( avgFPS ) );
 }
 
 void Clouds::drawContents() {

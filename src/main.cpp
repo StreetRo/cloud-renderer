@@ -168,7 +168,7 @@ void main_loop() {
   
   // Render clock
   double rend_prev = glfwGetTime(); // seconds
-  double avgFPS    = 0.;
+  double avg_fps   = 0.;
 
   while (!glfwWindowShouldClose(window)) {
     double now = glfwGetTime();
@@ -182,19 +182,18 @@ void main_loop() {
     while ( lag >= frame_time ) {
       app->update( dt );
 
-      avgFPS += 1. / dt;
-      avgFPS /= 2.;
-
       lag -= frame_time;
       updated = true;
       prev = now;
     }
 
     if ( updated ) {
-      double now = glfwGetTime();
-      if ( now - rend_prev > 1 ) {
-        app->updateGUI( avgFPS );
-        rend_prev = now;
+      double rend_now = glfwGetTime();
+      double rend_dt = rend_now - rend_prev;
+
+      if ( rend_dt > 1 ) {
+        app->updateGUI( 1. / dt );
+        rend_prev = rend_now;
       }
 
       glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
@@ -207,6 +206,9 @@ void main_loop() {
       screen->drawContents();
 
       glfwSwapBuffers(window);
+
+      avg_fps += 1. / dt;
+      avg_fps /= 2.;
     } else {
       std::this_thread::sleep_for( std::chrono::milliseconds( (int) ( 1000 * ( frame_time - dt ) ) ) / 2. );
     }
