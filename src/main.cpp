@@ -11,6 +11,8 @@
 #endif
 #include <unordered_set>
 #include <stdlib.h> // atoi for getopt inputs
+#include <chrono>
+#include <thread>
 
 #include "CGL/CGL.h"
 #include "clouds.h"
@@ -240,6 +242,8 @@ int main( int argc, char **argv ) {
       screen->drawWidgets();
 
       glfwSwapBuffers(window);
+    } else {
+      std::this_thread::sleep_for( std::chrono::milliseconds( (int) ( frame_time - dt ) ) );
     }
 
     if (!app->isAlive()) {
