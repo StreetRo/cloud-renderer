@@ -6,6 +6,10 @@ Win32/*
 .vs
 CMakeSettings.json
 
+# Clion
+.idea
+cmake-build-debug
+
 # Prerequisites
 *.d
 
