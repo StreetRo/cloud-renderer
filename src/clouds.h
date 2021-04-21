@@ -2,16 +2,38 @@
 #define CGL_CLOUDS_SIMULATOR_H
 
 #include <nanogui/nanogui.h>
-#include <memory>
 #include <CGL/vector3D.h>
+#include <glad/glad.h>
+#include <Eigen/Dense>
+#include <nanogui/nanogui.h>
 
+#include "misc/camera_info.h"
+#include "misc/file_utils.h"
 #include "camera.h"
+
+#include <unordered_map>
+#include <cmath>
+#include <memory>
 
 using namespace CGL;
 using namespace nanogui;
 
-struct UserShader;
 enum ShaderTypeHint { WIREFRAME = 0 };
+
+struct UserShader {
+  UserShader(std::string display_name, std::shared_ptr<GLShader> nanogui_shader, ShaderTypeHint type_hint)
+  : display_name(display_name)
+  , nanogui_shader(nanogui_shader)
+  , type_hint(type_hint) {
+  }
+
+  UserShader() {}
+  
+  std::shared_ptr<GLShader> nanogui_shader;
+  std::string display_name;
+  ShaderTypeHint type_hint;
+  
+};
 
 class Clouds {
 public:
@@ -37,10 +59,14 @@ public:
   int getFPS();
 private:
   virtual void initGUI(Screen *screen);
-  void drawWireframe(GLShader &shader);
+  void drawTriangle(GLShader &shader);
+  void drawPointCloud( GLShader& shader );
   
   void load_shaders();
   void load_textures();
+
+  // Object Init
+  void generatePoints();
   
   // File management
   std::string m_project_root;
@@ -56,6 +82,16 @@ private:
   long slider = 0;
   IntBox<int>* fps_box;
 
+  // Local Persistent Objects
+  int n_pts = 5000000;
+  int num_cells = 1;
+  float pt_size = 1;
+  MatrixXf* positions;
+  MatrixXf* density_pts;
+  MatrixXf* density_vals;
+  MatrixXf* worley_pts;
+  IntBox<int>* num_cells_box;
+
   // Default simulation values
   int frames_per_sec = 90;
   int simulation_steps = 30;
@@ -65,8 +101,9 @@ private:
   // OpenGL attributes
   int active_shader_idx = 0;
 
-  vector<UserShader> shaders;
-  vector<std::string> shaders_combobox_names;
+  std::unordered_map<std::string, UserShader> shader_map;
+  std::vector<UserShader> shaders;
+  std::vector<std::string> shaders_combobox_names;
   
   // OpenGL textures
   Vector3D m_gl_texture_1_size;
@@ -121,19 +158,6 @@ private:
   bool is_alive = true;
 
   Vector2i default_window_size = Vector2i(800, 600);
-};
-
-struct UserShader {
-  UserShader(std::string display_name, std::shared_ptr<GLShader> nanogui_shader, ShaderTypeHint type_hint)
-  : display_name(display_name)
-  , nanogui_shader(nanogui_shader)
-  , type_hint(type_hint) {
-  }
-  
-  std::shared_ptr<GLShader> nanogui_shader;
-  std::string display_name;
-  ShaderTypeHint type_hint;
-  
 };
 
 #endif // CGL_CLOUDS_SIM_H
