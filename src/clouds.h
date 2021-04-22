@@ -59,8 +59,11 @@ public:
   int getFPS();
 private:
   virtual void initGUI(Screen *screen);
-  void drawTriangle(GLShader &shader);
-  void drawPointCloud( GLShader& shader );
+  void drawTriangle( GLShader& );
+  void drawBoundingBox( GLShader& );
+  void drawWorleyPoints( GLShader& );
+  void drawDensityPoints( GLShader& );
+  void drawLines( GLShader& );
   
   void load_shaders();
   void load_textures();
@@ -81,16 +84,59 @@ private:
   float param1 = 0.0;
   long slider = 0;
   IntBox<int>* fps_box;
+  int num_boxes = 1;
+
+  bool enableBoundingBoxDraw = true;
+  bool enableWorleyDraw = true;
+  bool enableDensityDraw = true;
+  bool enableLinesDraw = true;
+
+  // TODO: refactor this in draw loops
+  const std::vector<Vector3f> offsets = {
+      // centre
+      Vector3f(0.f,0.f,0.f),
+      // front face
+      Vector3f(0.f,0.f,1.f),
+      Vector3f(-1.f,1.f,1.f),
+      Vector3f(-1.f,0.f,1.f),
+      Vector3f(-1.f,-1.f,1.f),
+      Vector3f(0.f,1.f,1.f),
+      Vector3f(0.f,-1.f,1.f),
+      Vector3f(1.f,1.f,1.f),
+      Vector3f(1.f,0.f,1.f),
+      Vector3f(1.f,-1.f,1.f),
+      // back face
+      Vector3f(0.f,0.f,-1.f),
+      Vector3f(-1.f,1.f,-1.f),
+      Vector3f(-1.f,0.f,-1.f),
+      Vector3f(-1.f,-1.f,-1.f),
+      Vector3f(0.f,1.f,-1.f),
+      Vector3f(0.f,-1.f,-1.f),
+      Vector3f(1.f,1.f,-1.f),
+      Vector3f(1.f,0.f,-1.f),
+      Vector3f(1.f,-1.f,-1.f),
+      // ring around centre
+      Vector3f(-1.f,1.f,0.f),
+      Vector3f(-1.f,0.f,0.f),
+      Vector3f(-1.f,-1.f,0.f),
+      Vector3f(0.f,1.f,0.f),
+      Vector3f(0.f,-1.f,0.f),
+      Vector3f(1.f,1.f,0.f),
+      Vector3f(1.f,0.f,0.f),
+      Vector3f(1.f,-1.f,0.f)
+  };
 
   // Local Persistent Objects
   int n_pts = 5000000;
   int num_cells = 1;
-  float pt_size = 1;
-  MatrixXf* positions;
-  MatrixXf* density_pts;
-  MatrixXf* density_vals;
-  MatrixXf* worley_pts;
+  float pt_size = 10;
+  MatrixXf* positions = nullptr;
+  MatrixXf* density_pts = nullptr;
+  MatrixXf* density_vals = nullptr;
+  MatrixXf* worley_pts = nullptr;
   IntBox<int>* num_cells_box;
+
+  MatrixXf* lines = nullptr;
 
   // Default simulation values
   int frames_per_sec = 90;

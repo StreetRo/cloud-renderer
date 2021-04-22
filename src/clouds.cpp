@@ -220,68 +220,21 @@ void Clouds::updateGUI( double avgFPS ) {
   fps_box->setValue( std::ceil( avgFPS ) );
 }
 
-void Clouds::drawContents() {
-  /*
-   * Scene globals
-   */
-  Matrix4f model;
-  model.setIdentity();
-
-  Matrix4f view = getViewMatrix();
-  Matrix4f projection = getProjectionMatrix();
-  Matrix4f viewProjection = projection * view;
-
-  Vector3D cam_pos = camera.position();
-
-
-  /* Draw Point Cloud */
-  {
-    auto& user_shad = shader_map["PointCloud"];
-
-    GLShader& shader = *(user_shad.nanogui_shader);
-    shader.bind();
-
-    // Prepare the camera projection matrix
-    shader.setUniform("u_model", model);
-    shader.setUniform("u_view_projection", viewProjection);
-
-    shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
-
-    drawPointCloud( shader );
-  }
-
-  /* Draw Triangle */
-  // {
-    // auto& user_shad = shader_map["Default"];
-
-    // GLShader& shader = *(user_shad.nanogui_shader);
-    // shader.bind();
-
-    // // Prepare the camera projection matrix
-    // shader.setUniform("u_model", model);
-    // shader.setUniform("u_view_projection", viewProjection);
-
-    // shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
-
-    // drawTriangle( shader );
-  // }
-}
-
 void Clouds::generatePoints() {
   int nc = num_cells + 1;
   int n = pow( nc, 3 );
   float cell_size = 1. / num_cells;
 
   /* Generate bounding points */
-  positions = new MatrixXf( 3, n );
+  if ( positions != nullptr ) { delete positions; }
+  positions =  new MatrixXf( 3, n );
+
   for ( int x = 0 ; x < nc ; x++ ) {
     for ( int y = 0 ; y < nc ; y++ ) {
       for ( int z = 0 ; z < nc ; z++ ) {
         Vector3f corner = Vector3f( x, y, z ) * cell_size;
-        auto R = ( Vector3f::Random(3) + Vector3f( 1., 1., 1. ) ) / 2.;
-
-        unsigned long i = x + nc * ( y + nc * z );
-        positions->col( i ) = corner; // + R * cell_size;
+        unsigned long i = z + y * nc + x * nc * nc;
+        positions->col( i ) = corner;
       }
     }
   }
@@ -289,7 +242,10 @@ void Clouds::generatePoints() {
   /* Generate worley points */
   nc = num_cells;
   n = pow( nc, 3 );
+
+  if ( worley_pts != nullptr ) { delete worley_pts; }
   worley_pts = new MatrixXf( 3, n );
+
   for ( int x = 0 ; x < nc ; x++ ) {
     for ( int y = 0 ; y < nc ; y++ ) {
       for ( int z = 0 ; z < nc ; z++ ) {
@@ -297,8 +253,9 @@ void Clouds::generatePoints() {
 
         Vector3f R = Vector3f::Random(3).array().abs();
 
-        unsigned long i = x + nc * ( y + nc * z );
-        worley_pts->col( i ) = corner + R * cell_size; 
+        unsigned long i = z + y * nc + x * nc * nc;
+        Vector3f pt = corner + R * cell_size;  
+        worley_pts->col( i ) = pt;
       }
     }
   }
@@ -306,49 +263,93 @@ void Clouds::generatePoints() {
   /* Generate density values */
   nc = num_cells;
   n = pow( nc, 3 );
+
+  if ( density_pts != nullptr ) { delete density_pts; }
   density_pts = new MatrixXf( 3, n * n );
+
+  if ( density_vals != nullptr ) { delete density_vals; }
   density_vals = new MatrixXf( 3, n * n );
   float density_cell_size = cell_size / nc;
 
-  // for each cell
+  if ( lines != nullptr ) { delete lines; }
+  lines = new MatrixXf( 3, 2 * n * n );
+
+  // for each cell (a cell contains 1 worley point)
   float max_dist = std::numeric_limits<float>::min();
   for ( int x = 0 ; x < nc ; x++ ) {
     for ( int y = 0 ; y < nc ; y++ ) {
       for ( int z = 0 ; z < nc ; z++ ) {
-        int i = x + y * num_cells + z * nc * nc; // cell index
+        int i = z + y * nc + x * nc * nc; // cell index
         Vector3f corner = Vector3f( x, y, z ) * cell_size;
 
         // for each density block inside the cell
         for ( int xx = 0 ; xx < nc ; xx++ ) {
           for ( int yy = 0 ; yy < nc ; yy++ ) {
             for ( int zz = 0 ; zz < nc ; zz++ ) {
-              int j = xx + yy * num_cells + zz * num_cells * num_cells; // density cell index
+              int j = zz + yy * nc + xx * nc * nc; // density cell index
               Vector3f density_corner = corner + Vector3f( xx, yy, zz ) * density_cell_size;
               Vector3f density_center = density_corner + Vector3f( 1., 1., 1. ) * density_cell_size / 2;
 
-              // search 9 cells for closest
-              Vector3f start = Vector3f( x - 1, y - 1, z - 1 );
+              // search 27 cells for closest Worley point
+              const Vector3f start = Vector3f( x - 1, y - 1, z - 1 );
               float min_dist = std::numeric_limits<float>::max();
+              Vector3f min_pt;
 
-              for ( int sx = start(0) ; sx < start(0) + 3 ; sx++ ) {
-                for ( int sy = start(1) ; sy < start(1) + 3 ; sy++ ) {
-                  for ( int sz = start(2) ; sz < start(2) + 3 ; sz++ ) {
-                    if ( ( 0 <= sx && sx < nc ) && ( 0 <= sy && sy < nc ) && ( 0 <= sz && sz < nc ) ) {
-                      int k = sx + sy * num_cells + sz * num_cells * num_cells; // index into cells
-                      if ( ! ( 0 <= k && k < worley_pts->size() ) ) { continue; }
+              for ( int sx = start.x() ; sx < start.x() + 3 ; sx++  ) {
+                int sxx = (sx < 0 ? nc + sx : sx) % nc;
+                for ( int sy = start.y() ; sy < start.y() + 3 ; sy++ ) {
+                  int syy = (sy < 0 ? nc + sy : sy) % nc;
+                  for ( int sz = start.z() ; sz < start.z() + 3 ; sz++ ) {
+                    int szz = (sz < 0 ? nc + sz : sz) % nc;
 
-                      auto v = worley_pts->col( k );
+                    if ( sx != sxx || sy != syy || sz != szz ) {
+                      // wrapping
+
+                      int k = szz + syy * nc + sxx * nc * nc; // index into cells w/ wrapping
+                      //
+                      // std::cout << "offx: " << offx << " offy: " << offy << " offz: " << offz << "\n";
+                      Vector3f v = worley_pts->col( k );
                       float dist = (density_center - v).norm();
+
+                      for ( int tx = 0, offx = -1 ; tx < nc ; tx++, offx++ ) {
+                        for ( int ty = 0 , offy = -1 ; ty < nc ; ty++, offy++ ) {
+                          for ( int tz = 0 , offz = -1 ; tz < nc ; tz++, offz++ ) {
+                            Vector3f V = v + Vector3f( offx, offy, offz );
+                            float dist = (density_center - V).norm();
+                          
+                            if ( dist < min_dist ) {
+                              min_pt = V;
+                              min_dist = dist;
+                            }
+                          }
+                        }
+                      }
+
+                    } else {
+                      // not wrapping
+
+                      int k = sz + sy * nc + sx * nc * nc; // index into cells w/ wrapping
+                      Vector3f v = worley_pts->col( k );
+
+                      float dist = (density_center - v).norm();
+
                       if ( dist < min_dist ) {
+                        min_pt = v;
                         min_dist = dist;
                       }
                     }
+
                   }
                 }
               }
 
-              density_pts->col( i * pow( nc, 3 ) + j ) = density_center;
-              density_vals->col( i * pow( nc, 3 ) + j ) = Vector3f( min_dist, 0, 0 );
+              int I = i * pow( nc, 3 ) + j;
+
+              lines->col( 2 * I ) = density_center;
+              lines->col( 2 * I + 1 ) = min_pt;
+
+              density_pts->col( I ) = density_center;
+              density_vals->col( I ) = Vector3f( min_dist, 0, 0 );
 
               // Find maximum value for nomalizing
               if ( min_dist > max_dist ) {
@@ -363,31 +364,153 @@ void Clouds::generatePoints() {
   } // end for each cell
 
   *density_vals /= max_dist;
-  *density_vals = MatrixXf::Ones( density_vals->rows(), density_vals->cols() ) - *density_vals;
-
 }
 
-void Clouds::drawPointCloud( GLShader &shader ) {
+void Clouds::drawContents() {
   glEnable( GL_DEPTH_TEST );
   glEnable( GL_BLEND );
   glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
-  /* Render bounding points */
-  shader.uploadAttrib( "in_position", *positions );
-  shader.setUniform("u_color", nanogui::Color(0.3f, 0.5f, 1.0f, 1.f) );
-  shader.drawArray( GL_POINTS, 0, pow( num_cells + 1, 3 ));
+  /*
+   * Scene globals
+   */
+  Matrix4f model;
+  model.setIdentity();
 
-  /* Render worley points */
-  shader.uploadAttrib( "in_position", *worley_pts );
-  shader.setUniform("u_color", nanogui::Color( 1.f, 0.f, 0.f, 1.f ) );
-  shader.drawArray( GL_POINTS, 0, pow( num_cells, 3 ) );
+  Matrix4f view = getViewMatrix();
+  Matrix4f projection = getProjectionMatrix();
+  Matrix4f viewProjection = projection * view;
 
-  /* Render density points */
-  shader.uploadAttrib( "in_position", *density_pts );
-  shader.uploadAttrib( "in_density", *density_vals );
-  shader.setUniform( "pt_size", pt_size, false );
-  shader.setUniform( "u_color", Vector4f( 1.f, 1.f, 1.f, 1.f ), false );
-  shader.drawArray( GL_POINTS, 0, pow( num_cells, 6 ) );
+  Vector3D cam_pos = camera.position();
+
+  /* Draw Bounding Box */
+  {
+    auto& user_shad = shader_map["WorleyPoints"];
+
+    GLShader& shader = *(user_shad.nanogui_shader);
+    shader.bind();
+
+    // Prepare the camera projection matrix
+    shader.setUniform("u_model", model);
+    shader.setUniform("u_view_projection", viewProjection);
+
+    shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
+
+    if ( enableBoundingBoxDraw ){ drawBoundingBox( shader ); }
+  }
+
+  /* Draw Worley Points */
+  {
+    auto& user_shad = shader_map["WorleyPoints"];
+
+    GLShader& shader = *(user_shad.nanogui_shader);
+    shader.bind();
+
+    // Prepare the camera projection matrix
+    shader.setUniform("u_model", model);
+    shader.setUniform("u_view_projection", viewProjection);
+
+    shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
+
+    if ( enableWorleyDraw ){ drawWorleyPoints( shader ); }
+  }
+
+  /* Draw Density Points */
+  {
+    auto& user_shad = shader_map["PointCloud"];
+
+    GLShader& shader = *(user_shad.nanogui_shader);
+    shader.bind();
+
+    // Prepare the camera projection matrix
+    shader.setUniform("u_model", model);
+    shader.setUniform("u_view_projection", viewProjection);
+
+    shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
+
+    if ( enableDensityDraw ){ drawDensityPoints( shader ); }
+  }
+
+  /* Draw lines from density pt to closest pt */
+  {
+    auto& user_shad = shader_map["NoLighting"];
+
+    GLShader& shader = *(user_shad.nanogui_shader);
+    shader.bind();
+
+    // Prepare the camera projection matrix
+    shader.setUniform("u_model", model);
+    shader.setUniform("u_view_projection", viewProjection);
+
+    shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
+
+    if ( enableLinesDraw ) { drawLines( shader ); }
+  }
+
+  /* Draw Triangle */
+  {
+    auto& user_shad = shader_map["Default"];
+
+    GLShader& shader = *(user_shad.nanogui_shader);
+    shader.bind();
+
+    // Prepare the camera projection matrix
+    shader.setUniform("u_model", model);
+    shader.setUniform("u_view_projection", viewProjection);
+
+    shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
+
+    // drawTriangle( shader );
+  }
+}
+
+void Clouds::drawBoundingBox( GLShader &shader ) {
+  for ( int i = 0 ; i < num_boxes ; i++ ) {
+    shader.setUniform( "u_offset", offsets[0] );
+    shader.setUniform( "u_color", nanogui::Color( 0.3f, 0.5f, 1.0f, 1.f )  );
+    shader.setUniform( "pt_size", 3.0 * pt_size, false );
+
+    shader.uploadAttrib( "in_position", *positions );
+
+    shader.drawArray( GL_POINTS, 0, positions->cols() );
+  }
+}
+
+void Clouds::drawWorleyPoints( GLShader &shader ) {
+  for ( int i = 0 ; i < num_boxes ; i++ ) {
+    /* Render worley points */
+    shader.setUniform( "u_offset", offsets[i] );
+    shader.setUniform( "u_color", nanogui::Color( 1.f, 0.f, 0.f, 1.f ) );
+    shader.setUniform( "pt_size", 1.5 * pt_size, false );
+
+    shader.uploadAttrib( "in_position", *worley_pts );
+
+    shader.drawArray( GL_POINTS, 0, worley_pts->cols() );
+  }
+}
+
+void Clouds::drawDensityPoints( GLShader &shader ) {
+  for ( int i = 0 ; i < num_boxes ; i++ ) {
+    /* Render density points */
+    shader.setUniform( "u_color", Vector4f( 1.f, 1.f, 1.f, 1.f ), false );
+    shader.setUniform( "u_offset", offsets[i] );
+    shader.setUniform( "pt_size", pt_size, false );
+
+    shader.uploadAttrib( "in_position", *density_pts );
+    shader.uploadAttrib( "in_density", *density_vals );
+
+    shader.drawArray( GL_POINTS, 0, density_pts->cols() );
+  }
+}
+
+void Clouds::drawLines( GLShader &shader ) {
+  shader.setUniform("u_color", nanogui::Color( 1.f, 1.f, 1.f, 0.2f ) );
+
+  for ( int i = 0 ; i < num_boxes ; i++ ) {
+    shader.setUniform( "u_offset", offsets[i] );
+    shader.uploadAttrib( "in_position", *lines );
+    shader.drawArray( GL_LINES, 0, lines->cols() );
+  }
 }
 
 void Clouds::drawTriangle(GLShader &shader) {
@@ -635,6 +758,30 @@ void Clouds::initGUI(Screen *screen) {
     b->setPushed( button1 );
     b->setFontSize(14);
     b->setChangeCallback( [this](bool state) {  } );
+
+    Button *b1 = new Button(window, "Bounding Points");
+    b1->setFlags(Button::ToggleButton);
+    b1->setPushed( enableBoundingBoxDraw );
+    b1->setFontSize(14);
+    b1->setChangeCallback( [&](bool state) { enableBoundingBoxDraw = state; } );
+
+    Button *b2 = new Button(window, "Worley Points");
+    b2->setFlags(Button::ToggleButton);
+    b2->setPushed( enableWorleyDraw );
+    b2->setFontSize(14);
+    b2->setChangeCallback( [this](bool state) { enableWorleyDraw = state; } );
+
+    Button *b3 = new Button(window, "Density Points");
+    b3->setFlags(Button::ToggleButton);
+    b3->setPushed( enableDensityDraw );
+    b3->setFontSize(14);
+    b3->setChangeCallback( [this](bool state) { enableDensityDraw = state; } );
+
+    Button *b4 = new Button(window, "Lines");
+    b4->setFlags(Button::ToggleButton);
+    b4->setPushed( enableLinesDraw );
+    b4->setFontSize(14);
+    b4->setChangeCallback( [this](bool state) { enableLinesDraw = state; } );
   }
 
   new Label(window, "Parameters", "sans-bold");
@@ -656,6 +803,18 @@ void Clouds::initGUI(Screen *screen) {
     fb->setUnits("units");
     fb->setSpinnable(true);
     fb->setCallback([this](float value) {  });
+
+    new Label(panel, "num boxes :", "sans-bold");
+
+    num_cells_box = new IntBox<int>(panel);
+    num_cells_box->setEditable(true);
+    num_cells_box->setFixedSize(Vector2i(100, 20));
+    num_cells_box->setFontSize(14);
+    num_cells_box->setValue( num_boxes );
+    num_cells_box->setMinValue( 0 );
+    num_cells_box->setUnits("cells");
+    num_cells_box->setSpinnable(true);
+    num_cells_box->setCallback([this](int value) { num_boxes = value; });
 
     new Label(panel, "num cells :", "sans-bold");
 
