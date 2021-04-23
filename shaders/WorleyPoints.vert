@@ -1,4 +1,4 @@
-#version 430
+#version 410
 
 // Uniform variables are constant throughout the entire shader
 // execution. They are also read-only to enable parallelization.
