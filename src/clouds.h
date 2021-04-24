@@ -48,7 +48,6 @@ public:
   virtual void drawContents();
 
   // Screen events
-
   virtual bool cursorPosCallbackEvent(double x, double y);
   virtual bool mouseButtonCallbackEvent(int button, int action, int modifiers);
   virtual bool keyCallbackEvent(int key, int scancode, int action, int mods);
@@ -57,6 +56,7 @@ public:
   virtual bool resizeCallbackEvent(int width, int height);
 
   int getFPS();
+
 private:
   virtual void initGUI(Screen *screen);
   void drawTriangle( GLShader& );
@@ -70,7 +70,10 @@ private:
 
   // Object Init
   void generatePoints();
-  
+  void generateBoundingPoints(int numberOfCells, int matrixDimension, float cellSize);
+  void generateWorleyPoints(int numberOfCells, int matrixDimension, float cellSize);
+  void generateDensityValues(int numberOfCells, int matrixDimension, float cellSize);
+
   // File management
   std::string m_project_root;
 
