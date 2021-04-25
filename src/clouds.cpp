@@ -208,6 +208,7 @@ void Clouds::init() {
   camera.configure(camera_info, screen_w, screen_h);
   canonicalCamera.configure(camera_info, screen_w, screen_h);
 
+  generateBoundingBox();
   generatePoints();
 }
 
@@ -266,6 +267,7 @@ void Clouds::generateWorleyPoints(int numberOfCells) {
         Vector3f corner = Vector3f( x, y, z ) * cell_size;
 
         Vector3f R = Vector3f::Random(3).array().abs();
+        std::cout << "R: " << R << "\n";
 
         unsigned long i = z + y * numberOfCells + x * numberOfCells * numberOfCells;
         Vector3f pt = corner + R * cell_size;
@@ -392,6 +394,53 @@ void Clouds::generatePoints() {
   generateBoundingPoints(num_cells + 1);
   generateWorleyPoints(num_cells);
   generateDensityValues(num_cells);
+}
+
+void Clouds::generateBoundingBox() {
+  // 12 lines to draw cube
+  // if ( bbox_pts == nullptr ) { bbox_pts = new MatrixXf( 3, 24 ); }
+
+  Vector3f& a = bbox_min;
+  Vector3f& b = bbox_max;
+
+  // back face
+  bbox_pts.col( 0  ) = bbox_min;
+  bbox_pts.col( 1  ) = Vector3f( b.x() , a.y() , a.z() );
+
+  bbox_pts.col( 2  ) = Vector3f( b.x() , a.y() , a.z() );
+  bbox_pts.col( 3  ) = Vector3f( b.x() , b.y() , a.z() );
+
+  bbox_pts.col( 4  ) = Vector3f( b.x() , b.y() , a.z() );
+  bbox_pts.col( 5  ) = Vector3f( a.x() , b.y() , a.z() );
+
+  bbox_pts.col( 6  ) = Vector3f( a.x() , b.y() , a.z() );
+  bbox_pts.col( 7  ) = bbox_min;
+
+  // front face
+  bbox_pts.col( 8  ) = bbox_max;
+  bbox_pts.col( 9  ) = Vector3f( a.x() , b.y() , b.z() );
+
+  bbox_pts.col( 10 ) = Vector3f( a.x() , b.y() , b.z() );
+  bbox_pts.col( 11 ) = Vector3f( a.x() , a.y() , b.z() );
+
+  bbox_pts.col( 12 ) = Vector3f( a.x() , a.y() , b.z() );
+  bbox_pts.col( 13 ) = Vector3f( b.x() , a.y() , b.z() );
+
+  bbox_pts.col( 14 ) = Vector3f( b.x() , a.y() , b.z() );
+  bbox_pts.col( 15 ) = bbox_max;
+
+  // Spokes between squares
+  bbox_pts.col( 16 ) = Vector3f( a.x() , a.y() , a.z() );
+  bbox_pts.col( 17 ) = Vector3f( a.x() , a.y() , b.z() );
+
+  bbox_pts.col( 18 ) = Vector3f( a.x() , b.y() , a.z() );
+  bbox_pts.col( 19 ) = Vector3f( a.x() , b.y() , b.z() );
+
+  bbox_pts.col( 20 ) = Vector3f( b.x() , b.y() , b.z() );
+  bbox_pts.col( 21 ) = Vector3f( b.x() , b.y() , a.z() );
+
+  bbox_pts.col( 22 ) = Vector3f( b.x() , a.y() , b.z() );
+  bbox_pts.col( 23 ) = Vector3f( b.x() , a.y() , a.z() );
 }
 
 // ----------------------------------------------------------------------------
@@ -585,9 +634,9 @@ void Clouds::initGUI(Screen *screen) {
 
     Button *b1 = new Button(window, "Bounding Points");
     b1->setFlags(Button::ToggleButton);
-    b1->setPushed( enableBoundingBoxDraw );
+    b1->setPushed( enableBoundingPointsDraw );
     b1->setFontSize(14);
-    b1->setChangeCallback( [&](bool state) { enableBoundingBoxDraw = state; } );
+    b1->setChangeCallback( [&](bool state) { enableBoundingPointsDraw = state; } );
 
     Button *b2 = new Button(window, "Worley Points");
     b2->setFlags(Button::ToggleButton);
@@ -667,6 +716,55 @@ void Clouds::initGUI(Screen *screen) {
     pt_size_box->setSpinnable(true);
     pt_size_box->setCallback([this](float value) {
         pt_size = value;
+    });
+  }
+
+  new Label(window, "Bounding Box", "sans-bold");
+  {
+    Widget *panel = new Widget(window);
+    GridLayout *layout =
+        new GridLayout(Orientation::Horizontal, 2, Alignment::Middle, 5, 5);
+    layout->setColAlignment({Alignment::Maximum, Alignment::Fill});
+    layout->setSpacing(0, 10);
+    panel->setLayout(layout);
+
+    new Label(panel, "length x :", "sans-bold");
+    FloatBox<double> *fb1 = new FloatBox<double>(panel);
+    fb1->setEditable(true);
+    fb1->setFixedSize(Vector2i(100, 20));
+    fb1->setFontSize(14);
+    fb1->setValue( bbox_max.x() - bbox_min.x() );
+    fb1->setUnits("units");
+    fb1->setSpinnable(true);
+    fb1->setCallback([this](float value) { 
+        bbox_max.x() = value;
+        generateBoundingBox();
+    });
+
+    new Label(panel, "length y :", "sans-bold");
+    FloatBox<double> *fb2 = new FloatBox<double>(panel);
+    fb2->setEditable(true);
+    fb2->setFixedSize(Vector2i(100, 20));
+    fb2->setFontSize(14);
+    fb2->setValue( bbox_max.y() - bbox_min.y() );
+    fb2->setUnits("units");
+    fb2->setSpinnable(true);
+    fb2->setCallback([this](float value) { 
+        bbox_max.y() = value;
+        generateBoundingBox();
+    });
+
+    new Label(panel, "length z :", "sans-bold");
+    FloatBox<double> *fb3 = new FloatBox<double>(panel);
+    fb3->setEditable(true);
+    fb3->setFixedSize(Vector2i(100, 20));
+    fb3->setFontSize(14);
+    fb3->setValue( bbox_max.z() - bbox_min.z() );
+    fb3->setUnits("units");
+    fb3->setSpinnable(true);
+    fb3->setCallback([this](float value) { 
+        bbox_max.z() = value;
+        generateBoundingBox();
     });
   }
 

@@ -17,7 +17,22 @@ void Clouds::drawContents() {
 
   Vector3D cam_pos = camera.position();
 
-  /* Draw Bounding Box */
+
+  /* Draw BoundingBox */
+  {
+    auto& user_shad = shader_map["BoundingBox"];
+
+    GLShader& shader = *(user_shad.nanogui_shader);
+    shader.bind();
+
+    // Prepare the camera projection matrix
+    shader.setUniform("u_model", model);
+    shader.setUniform("u_view_projection", viewProjection);
+
+    drawBoundingBox( shader );
+  }
+
+  /* Draw Bounding Points */
   {
     auto& user_shad = shader_map["WorleyPoints"];
 
@@ -30,7 +45,7 @@ void Clouds::drawContents() {
 
     shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
 
-    if ( enableBoundingBoxDraw ){ drawBoundingBox( shader ); }
+    if ( enableBoundingPointsDraw ){ drawBoundingPoints( shader ); }
   }
 
   /* Draw Worley Points */
@@ -95,7 +110,6 @@ void Clouds::drawContents() {
     drawPointLight( shader );
   }
 
-
   /* Draw Triangle */
   {
     auto& user_shad = shader_map["Default"];
@@ -114,6 +128,12 @@ void Clouds::drawContents() {
 }
 
 void Clouds::drawBoundingBox( GLShader &shader ) {
+  shader.setUniform( "u_color", nanogui::Color( 1.f, 0.36, 0.0f, 1.f )  );
+  shader.uploadAttrib( "in_position", bbox_pts );
+  shader.drawArray( GL_LINES, 0, bbox_pts.cols() );
+}
+
+void Clouds::drawBoundingPoints( GLShader &shader ) {
   for ( int i = 0 ; i < num_boxes ; i++ ) {
     shader.setUniform( "u_offset", offsets[0] );
     shader.setUniform( "u_color", nanogui::Color( 0.4f, 0.5f, 1.0f, 1.f )  );

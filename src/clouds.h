@@ -60,6 +60,7 @@ public:
 private:
   virtual void initGUI(Screen *screen);
   void drawTriangle( GLShader& );
+  void drawBoundingPoints( GLShader& );
   void drawBoundingBox( GLShader& );
   void drawWorleyPoints( GLShader& );
   void drawDensityPoints( GLShader& );
@@ -74,6 +75,7 @@ private:
   void generateBoundingPoints(int numberOfCells);
   void generateWorleyPoints(int numberOfCells);
   void generateDensityValues(int numberOfCells);
+  void generateBoundingBox();
 
   // File management
   std::string m_project_root;
@@ -90,7 +92,7 @@ private:
   IntBox<int>* fps_box;
   int num_boxes = 1;
 
-  bool enableBoundingBoxDraw = true;
+  bool enableBoundingPointsDraw = true;
   bool enableWorleyDraw = true;
   bool enableDensityDraw = true;
   bool enableLinesDraw = true;
@@ -143,6 +145,11 @@ private:
   MatrixXf* lines = nullptr;
 
   Vector4f pt_light_pos = Vector4f( 0, 2, -2, 1 );
+
+  // Bounding Box
+  MatrixXf bbox_pts = MatrixXf( 3, 24 );
+  Vector3f bbox_min = Vector3f( 0.f, 0.f, 0.f );
+  Vector3f bbox_max = Vector3f( 0.5f, 0.5f, 0.5f );
 
   // Default simulation values
   int frames_per_sec = 90;
