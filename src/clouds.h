@@ -61,7 +61,8 @@ private:
   virtual void initGUI(Screen *screen);
   void drawTriangle( GLShader& );
   void drawBoundingPoints( GLShader& );
-  void drawBoundingBox( GLShader& );
+  void drawBoundingBoxLines( GLShader& );
+  void drawBoundingBoxSurface( GLShader& );
   void drawWorleyPoints( GLShader& );
   void drawDensityPoints( GLShader& );
   void drawLines( GLShader& );

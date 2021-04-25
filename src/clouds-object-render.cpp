@@ -96,9 +96,9 @@ void Clouds::drawContents() {
     drawPointLight( shader );
   }
 
-  /* Draw BoundingBox */
+  /* Draw Bounding Box Lines */
   {
-    auto& user_shad = shader_map["BoundingBox"];
+    auto& user_shad = shader_map["BoundingBoxLines"];
 
     GLShader& shader = *(user_shad.nanogui_shader);
     shader.bind();
@@ -107,7 +107,21 @@ void Clouds::drawContents() {
     shader.setUniform("u_model", model);
     shader.setUniform("u_view_projection", viewProjection);
 
-    drawBoundingBox( shader );
+    drawBoundingBoxLines( shader );
+  }
+
+  /* Draw Bounding Box Surface */
+  {
+    auto& user_shad = shader_map["BoundingBoxSurface"];
+
+    GLShader& shader = *(user_shad.nanogui_shader);
+    shader.bind();
+
+    // Prepare the camera projection matrix
+    shader.setUniform("u_model", model);
+    shader.setUniform("u_view_projection", viewProjection);
+
+    drawBoundingBoxSurface( shader );
   }
 
 
@@ -128,11 +142,13 @@ void Clouds::drawContents() {
   }
 }
 
-void Clouds::drawBoundingBox( GLShader &shader ) {
+void Clouds::drawBoundingBoxLines( GLShader &shader ) {
   shader.setUniform( "u_color", nanogui::Color( 1.f, 0.36, 0.0f, 1.f )  );
   shader.uploadAttrib( "in_position", bbox_pts );
   shader.drawArray( GL_LINES, 0, bbox_pts.cols() );
+}
 
+void Clouds::drawBoundingBoxSurface( GLShader &shader ) {
   shader.setUniform( "u_color", nanogui::Color( 0.f, 0.56, 0.98, 0.5 )  );
   shader.uploadAttrib( "in_position", bbox_tris );
   shader.drawArray( GL_TRIANGLES, 0, bbox_tris.cols() );
