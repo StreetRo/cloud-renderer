@@ -267,7 +267,6 @@ void Clouds::generateWorleyPoints(int numberOfCells) {
         Vector3f corner = Vector3f( x, y, z ) * cell_size;
 
         Vector3f R = Vector3f::Random(3).array().abs();
-        std::cout << "R: " << R << "\n";
 
         unsigned long i = z + y * numberOfCells + x * numberOfCells * numberOfCells;
         Vector3f pt = corner + R * cell_size;
@@ -398,7 +397,6 @@ void Clouds::generatePoints() {
 
 void Clouds::generateBoundingBox() {
   // 12 lines to draw cube
-  // if ( bbox_pts == nullptr ) { bbox_pts = new MatrixXf( 3, 24 ); }
 
   Vector3f& a = bbox_min;
   Vector3f& b = bbox_max;
@@ -441,6 +439,60 @@ void Clouds::generateBoundingBox() {
 
   bbox_pts.col( 22 ) = Vector3f( b.x() , a.y() , b.z() );
   bbox_pts.col( 23 ) = Vector3f( b.x() , a.y() , a.z() );
+
+  // back face
+  bbox_tris.col( 0  ) = Vector3f( a.x() , a.y() , a.z() );
+  bbox_tris.col( 1  ) = Vector3f( b.x() , a.y() , a.z() );
+  bbox_tris.col( 2  ) = Vector3f( a.x() , b.y() , a.z() );
+
+  bbox_tris.col( 3  ) = Vector3f( b.x() , b.y() , a.z() );
+  bbox_tris.col( 4  ) = Vector3f( b.x() , a.y() , a.z() );
+  bbox_tris.col( 5  ) = Vector3f( a.x() , b.y() , a.z() );
+
+  // front face
+  bbox_tris.col( 6  ) = Vector3f( a.x() , a.y() , b.z() );
+  bbox_tris.col( 7  ) = Vector3f( b.x() , a.y() , b.z() );
+  bbox_tris.col( 8  ) = Vector3f( a.x() , b.y() , b.z() );
+
+  bbox_tris.col( 9  ) = Vector3f( b.x() , b.y() , b.z() );
+  bbox_tris.col( 10 ) = Vector3f( b.x() , a.y() , b.z() );
+  bbox_tris.col( 11 ) = Vector3f( a.x() , b.y() , b.z() );
+
+  // left side
+  bbox_tris.col( 12 ) = Vector3f( a.x() , a.y() , a.z() );
+  bbox_tris.col( 13 ) = Vector3f( a.x() , a.y() , b.z() );
+  bbox_tris.col( 14 ) = Vector3f( a.x() , b.y() , a.z() );
+
+  bbox_tris.col( 15 ) = Vector3f( a.x() , b.y() , b.z() );
+  bbox_tris.col( 16 ) = Vector3f( a.x() , a.y() , b.z() );
+  bbox_tris.col( 17 ) = Vector3f( a.x() , b.y() , a.z() );
+
+  // right side
+  bbox_tris.col( 18 ) = Vector3f( b.x() , a.y() , a.z() );
+  bbox_tris.col( 19 ) = Vector3f( b.x() , a.y() , b.z() );
+  bbox_tris.col( 20 ) = Vector3f( b.x() , b.y() , a.z() );
+
+  bbox_tris.col( 21 ) = Vector3f( b.x() , b.y() , b.z() );
+  bbox_tris.col( 22 ) = Vector3f( b.x() , a.y() , b.z() );
+  bbox_tris.col( 23 ) = Vector3f( b.x() , b.y() , a.z() );
+
+  // top
+  bbox_tris.col( 24 ) = Vector3f( a.x() , b.y() , a.z() );
+  bbox_tris.col( 25 ) = Vector3f( a.x() , b.y() , b.z() );
+  bbox_tris.col( 26 ) = Vector3f( b.x() , b.y() , a.z() );
+
+  bbox_tris.col( 27 ) = Vector3f( b.x() , b.y() , b.z() );
+  bbox_tris.col( 28 ) = Vector3f( a.x() , b.y() , b.z() );
+  bbox_tris.col( 29 ) = Vector3f( b.x() , b.y() , a.z() );
+
+  // top
+  bbox_tris.col( 30 ) = Vector3f( a.x() , a.y() , a.z() );
+  bbox_tris.col( 31 ) = Vector3f( a.x() , a.y() , b.z() );
+  bbox_tris.col( 32 ) = Vector3f( b.x() , a.y() , a.z() );
+
+  bbox_tris.col( 33 ) = Vector3f( b.x() , a.y() , b.z() );
+  bbox_tris.col( 34 ) = Vector3f( a.x() , a.y() , b.z() );
+  bbox_tris.col( 35 ) = Vector3f( b.x() , a.y() , a.z() );
 }
 
 // ----------------------------------------------------------------------------

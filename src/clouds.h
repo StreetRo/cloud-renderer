@@ -148,6 +148,7 @@ private:
 
   // Bounding Box
   MatrixXf bbox_pts = MatrixXf( 3, 24 );
+  MatrixXf bbox_tris = MatrixXf( 3, 36 );
   Vector3f bbox_min = Vector3f( 0.f, 0.f, 0.f );
   Vector3f bbox_max = Vector3f( 0.5f, 0.5f, 0.5f );
 

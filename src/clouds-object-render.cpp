@@ -131,6 +131,10 @@ void Clouds::drawBoundingBox( GLShader &shader ) {
   shader.setUniform( "u_color", nanogui::Color( 1.f, 0.36, 0.0f, 1.f )  );
   shader.uploadAttrib( "in_position", bbox_pts );
   shader.drawArray( GL_LINES, 0, bbox_pts.cols() );
+
+  shader.setUniform( "u_color", nanogui::Color( 0.f, 0.56, 0.98, 0.5 )  );
+  shader.uploadAttrib( "in_position", bbox_tris );
+  shader.drawArray( GL_TRIANGLES, 0, bbox_tris.cols() );
 }
 
 void Clouds::drawBoundingPoints( GLShader &shader ) {
