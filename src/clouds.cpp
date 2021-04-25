@@ -230,7 +230,9 @@ void Clouds::updateGUI( double avgFPS ) {
  * and places them into Clouds::positions.
  * This is a helper for Clouds::generatePoints().
  */
-void Clouds::generateBoundingPoints(int numberOfCells, int matrixDimension, float cellSize) {
+void Clouds::generateBoundingPoints(int numberOfCells) {
+  int matrixDimension = pow( numberOfCells, 3 );
+  float cell_size = 1. / num_cells;
 
   if ( positions != nullptr ) { delete positions; }
   positions =  new MatrixXf( 3, matrixDimension );
@@ -238,7 +240,7 @@ void Clouds::generateBoundingPoints(int numberOfCells, int matrixDimension, floa
   for ( int x = 0 ; x < numberOfCells ; x++ ) {
     for ( int y = 0 ; y < numberOfCells ; y++ ) {
       for ( int z = 0 ; z < numberOfCells ; z++ ) {
-        Vector3f corner = Vector3f( x, y, z ) * cellSize;
+        Vector3f corner = Vector3f( x, y, z ) * cell_size;
         unsigned long i = z + y * numberOfCells + x * numberOfCells * numberOfCells;
         positions->col( i ) = corner;
       }
@@ -251,19 +253,22 @@ void Clouds::generateBoundingPoints(int numberOfCells, int matrixDimension, floa
  * and places them into Clouds::worley_pts.
  * This is a helper for Clouds::generatePoints().
  */
-void Clouds::generateWorleyPoints(int numberOfCells, int matrixDimension, float cellSize) {
+void Clouds::generateWorleyPoints(int numberOfCells) {
+  int matrixDimension = pow( numberOfCells, 3 );
+  float cell_size = 1. / num_cells;
+
   if ( worley_pts != nullptr ) { delete worley_pts; }
   worley_pts = new MatrixXf( 3, matrixDimension );
 
   for ( int x = 0 ; x < numberOfCells ; x++ ) {
     for ( int y = 0 ; y < numberOfCells ; y++ ) {
       for ( int z = 0 ; z < numberOfCells ; z++ ) {
-        Vector3f corner = Vector3f( x, y, z ) * cellSize;
+        Vector3f corner = Vector3f( x, y, z ) * cell_size;
 
         Vector3f R = Vector3f::Random(3).array().abs();
 
         unsigned long i = z + y * numberOfCells + x * numberOfCells * numberOfCells;
-        Vector3f pt = corner + R * cellSize;
+        Vector3f pt = corner + R * cell_size;
         worley_pts->col( i ) = pt;
       }
     }
@@ -278,34 +283,33 @@ void Clouds::generateWorleyPoints(int numberOfCells, int matrixDimension, float 
  * Results are placed into Clouds::density_pts & Clouds::density_vals.
  * This is a helper for Clouds::generatePoints().
  */
-void Clouds::generateDensityValues(int numberOfCells, int matrixDimension, float cellSize) {
-  int n = matrixDimension;
-  int nc = numberOfCells;
-  float cell_size = cellSize;
+void Clouds::generateDensityValues(int numberOfCells) {
+  int matrixDimension = pow( numberOfCells, 3 );
+  float cell_size = 1. / num_cells;
 
   if ( density_pts != nullptr ) { delete density_pts; }
-  density_pts = new MatrixXf( 3, n * n );
+  density_pts = new MatrixXf( 3, matrixDimension * matrixDimension );
 
   if ( density_vals != nullptr ) { delete density_vals; }
-  density_vals = new MatrixXf( 3, n * n );
-  float density_cell_size = cell_size / nc;
+  density_vals = new MatrixXf( 3, matrixDimension * matrixDimension );
+  float density_cell_size = cell_size / numberOfCells;
 
   if ( lines != nullptr ) { delete lines; }
-  lines = new MatrixXf( 3, 2 * n * n );
+  lines = new MatrixXf( 3, 2 * matrixDimension * matrixDimension );
 
   // for each cell (a cell contains 1 worley point)
   float max_dist = std::numeric_limits<float>::min();
-  for ( int x = 0 ; x < nc ; x++ ) {
-    for ( int y = 0 ; y < nc ; y++ ) {
-      for ( int z = 0 ; z < nc ; z++ ) {
-        int i = z + y * nc + x * nc * nc; // cell index
+  for ( int x = 0 ; x < numberOfCells ; x++ ) {
+    for ( int y = 0 ; y < numberOfCells ; y++ ) {
+      for ( int z = 0 ; z < numberOfCells ; z++ ) {
+        int i = z + y * numberOfCells + x * numberOfCells * numberOfCells; // cell index
         Vector3f corner = Vector3f( x, y, z ) * cell_size;
 
         // for each density block inside the cell
-        for ( int xx = 0 ; xx < nc ; xx++ ) {
-          for ( int yy = 0 ; yy < nc ; yy++ ) {
-            for ( int zz = 0 ; zz < nc ; zz++ ) {
-              int j = zz + yy * nc + xx * nc * nc; // density cell index
+        for ( int xx = 0 ; xx < numberOfCells ; xx++ ) {
+          for ( int yy = 0 ; yy < numberOfCells ; yy++ ) {
+            for ( int zz = 0 ; zz < numberOfCells ; zz++ ) {
+              int j = zz + yy * numberOfCells + xx * numberOfCells * numberOfCells; // density cell index
               Vector3f density_corner = corner + Vector3f( xx, yy, zz ) * density_cell_size;
               Vector3f density_center = density_corner + Vector3f( 1., 1., 1. ) * density_cell_size / 2;
 
@@ -315,24 +319,23 @@ void Clouds::generateDensityValues(int numberOfCells, int matrixDimension, float
               Vector3f min_pt;
 
               for ( int sx = start.x() ; sx < start.x() + 3 ; sx++  ) {
-                int sxx = (sx < 0 ? nc + sx : sx) % nc;
+                int sxx = (sx < 0 ? numberOfCells + sx : sx) % numberOfCells;
                 for ( int sy = start.y() ; sy < start.y() + 3 ; sy++ ) {
-                  int syy = (sy < 0 ? nc + sy : sy) % nc;
+                  int syy = (sy < 0 ? numberOfCells + sy : sy) % numberOfCells;
                   for ( int sz = start.z() ; sz < start.z() + 3 ; sz++ ) {
-                    int szz = (sz < 0 ? nc + sz : sz) % nc;
+                    int szz = (sz < 0 ? numberOfCells + sz : sz) % numberOfCells;
 
                     if ( sx != sxx || sy != syy || sz != szz ) {
                       // wrapping
 
-                      int k = szz + syy * nc + sxx * nc * nc; // index into cells w/ wrapping
-                      //
-                      // std::cout << "offx: " << offx << " offy: " << offy << " offz: " << offz << "\n";
+                      // index into cells w/ wrapping
+                      int k = szz + syy * numberOfCells + sxx * numberOfCells * numberOfCells;
                       Vector3f v = worley_pts->col( k );
                       float dist = (density_center - v).norm();
 
-                      for ( int tx = 0, offx = -1 ; tx < nc ; tx++, offx++ ) {
-                        for ( int ty = 0 , offy = -1 ; ty < nc ; ty++, offy++ ) {
-                          for ( int tz = 0 , offz = -1 ; tz < nc ; tz++, offz++ ) {
+                      for ( int tx = 0, offx = -1 ; tx < numberOfCells ; tx++, offx++ ) {
+                        for ( int ty = 0 , offy = -1 ; ty < numberOfCells ; ty++, offy++ ) {
+                          for ( int tz = 0 , offz = -1 ; tz < numberOfCells ; tz++, offz++ ) {
                             Vector3f V = v + Vector3f( offx, offy, offz );
                             float dist = (density_center - V).norm();
 
@@ -347,7 +350,7 @@ void Clouds::generateDensityValues(int numberOfCells, int matrixDimension, float
                     } else {
                       // not wrapping
 
-                      int k = sz + sy * nc + sx * nc * nc; // index into cells w/ wrapping
+                      int k = sz + sy * numberOfCells + sx * numberOfCells * numberOfCells; // index into cells w/ wrapping
                       Vector3f v = worley_pts->col( k );
 
                       float dist = (density_center - v).norm();
@@ -362,7 +365,7 @@ void Clouds::generateDensityValues(int numberOfCells, int matrixDimension, float
                 }
               }
 
-              int I = i * pow( nc, 3 ) + j;
+              int I = i * pow( numberOfCells, 3 ) + j;
 
               lines->col( 2 * I ) = density_center;
               lines->col( 2 * I + 1 ) = min_pt;
@@ -386,147 +389,9 @@ void Clouds::generateDensityValues(int numberOfCells, int matrixDimension, float
 }
 
 void Clouds::generatePoints() {
-  int nc = num_cells + 1;
-  int n = pow( nc, 3 );
-  float cell_size = 1. / num_cells;
-
-  //generateBoundingPoints(num_cells + 1, n, cell_size);
-  /* Generate bounding points */
-  if ( positions != nullptr ) { delete positions; }
-  positions =  new MatrixXf( 3, n );
-
-  for ( int x = 0 ; x < nc ; x++ ) {
-    for ( int y = 0 ; y < nc ; y++ ) {
-      for ( int z = 0 ; z < nc ; z++ ) {
-        Vector3f corner = Vector3f( x, y, z ) * cell_size;
-        unsigned long i = z + y * nc + x * nc * nc;
-        positions->col( i ) = corner;
-      }
-    }
-  }
-
-  /* Generate worley points */
-  //generateWorleyPoints(num_cells, n, cell_size);
-  if ( worley_pts != nullptr ) { delete worley_pts; }
-  worley_pts = new MatrixXf( 3, n );
-
-  for ( int x = 0 ; x < nc ; x++ ) {
-    for ( int y = 0 ; y < nc ; y++ ) {
-      for ( int z = 0 ; z < nc ; z++ ) {
-        Vector3f corner = Vector3f( x, y, z ) * cell_size;
-
-        Vector3f R = Vector3f::Random(3).array().abs();
-
-        unsigned long i = z + y * nc + x * nc * nc;
-        Vector3f pt = corner + R * cell_size;  
-        worley_pts->col( i ) = pt;
-      }
-    }
-  }
-
-  /* Generate density values */
-  generateDensityValues(num_cells, n, cell_size);
-/*
-  if ( density_pts != nullptr ) { delete density_pts; }
-  density_pts = new MatrixXf( 3, n * n );
-
-  if ( density_vals != nullptr ) { delete density_vals; }
-  density_vals = new MatrixXf( 3, n * n );
-  float density_cell_size = cell_size / nc;
-
-  if ( lines != nullptr ) { delete lines; }
-  lines = new MatrixXf( 3, 2 * n * n );
-
-  // for each cell (a cell contains 1 worley point)
-  float max_dist = std::numeric_limits<float>::min();
-  for ( int x = 0 ; x < nc ; x++ ) {
-    for ( int y = 0 ; y < nc ; y++ ) {
-      for ( int z = 0 ; z < nc ; z++ ) {
-        int i = z + y * nc + x * nc * nc; // cell index
-        Vector3f corner = Vector3f( x, y, z ) * cell_size;
-
-        // for each density block inside the cell
-        for ( int xx = 0 ; xx < nc ; xx++ ) {
-          for ( int yy = 0 ; yy < nc ; yy++ ) {
-            for ( int zz = 0 ; zz < nc ; zz++ ) {
-              int j = zz + yy * nc + xx * nc * nc; // density cell index
-              Vector3f density_corner = corner + Vector3f( xx, yy, zz ) * density_cell_size;
-              Vector3f density_center = density_corner + Vector3f( 1., 1., 1. ) * density_cell_size / 2;
-
-              // search 27 cells for closest Worley point
-              const Vector3f start = Vector3f( x - 1, y - 1, z - 1 );
-              float min_dist = std::numeric_limits<float>::max();
-              Vector3f min_pt;
-
-              for ( int sx = start.x() ; sx < start.x() + 3 ; sx++  ) {
-                int sxx = (sx < 0 ? nc + sx : sx) % nc;
-                for ( int sy = start.y() ; sy < start.y() + 3 ; sy++ ) {
-                  int syy = (sy < 0 ? nc + sy : sy) % nc;
-                  for ( int sz = start.z() ; sz < start.z() + 3 ; sz++ ) {
-                    int szz = (sz < 0 ? nc + sz : sz) % nc;
-
-                    if ( sx != sxx || sy != syy || sz != szz ) {
-                      // wrapping
-
-                      int k = szz + syy * nc + sxx * nc * nc; // index into cells w/ wrapping
-                      //
-                      // std::cout << "offx: " << offx << " offy: " << offy << " offz: " << offz << "\n";
-                      Vector3f v = worley_pts->col( k );
-                      float dist = (density_center - v).norm();
-
-                      for ( int tx = 0, offx = -1 ; tx < nc ; tx++, offx++ ) {
-                        for ( int ty = 0 , offy = -1 ; ty < nc ; ty++, offy++ ) {
-                          for ( int tz = 0 , offz = -1 ; tz < nc ; tz++, offz++ ) {
-                            Vector3f V = v + Vector3f( offx, offy, offz );
-                            float dist = (density_center - V).norm();
-
-                            if ( dist < min_dist ) {
-                              min_pt = V;
-                              min_dist = dist;
-                            }
-                          }
-                        }
-                      }
-
-                    } else {
-                      // not wrapping
-
-                      int k = sz + sy * nc + sx * nc * nc; // index into cells w/ wrapping
-                      Vector3f v = worley_pts->col( k );
-
-                      float dist = (density_center - v).norm();
-
-                      if ( dist < min_dist ) {
-                        min_pt = v;
-                        min_dist = dist;
-                      }
-                    }
-
-                  }
-                }
-              }
-
-              int I = i * pow( nc, 3 ) + j;
-
-              lines->col( 2 * I ) = density_center;
-              lines->col( 2 * I + 1 ) = min_pt;
-
-              density_pts->col( I ) = density_center;
-              density_vals->col( I ) = Vector3f( min_dist, 0, 0 );
-
-              // Find maximum value for nomalizing
-              if ( min_dist > max_dist ) {
-                max_dist = min_dist;
-              }
-            }
-          }
-        } // end for each density block inside the cell
-
-      }
-    }
-  } // end for each cell
-
-  *density_vals /= max_dist;*/
+  generateBoundingPoints(num_cells + 1);
+  generateWorleyPoints(num_cells);
+  generateDensityValues(num_cells);
 }
 
 void Clouds::drawContents() {

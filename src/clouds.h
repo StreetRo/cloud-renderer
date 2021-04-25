@@ -70,9 +70,9 @@ private:
 
   // Object Init
   void generatePoints();
-  void generateBoundingPoints(int numberOfCells, int matrixDimension, float cellSize);
-  void generateWorleyPoints(int numberOfCells, int matrixDimension, float cellSize);
-  void generateDensityValues(int numberOfCells, int matrixDimension, float cellSize);
+  void generateBoundingPoints(int numberOfCells);
+  void generateWorleyPoints(int numberOfCells);
+  void generateDensityValues(int numberOfCells);
 
   // File management
   std::string m_project_root;
