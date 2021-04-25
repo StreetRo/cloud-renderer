@@ -5,6 +5,7 @@ set(CLOUDS_VIEWER_SOURCE
     # Application
     main.cpp
     clouds.cpp
+    clouds-object-render.cpp
 
     # Miscellaneous
     # png.cpp
