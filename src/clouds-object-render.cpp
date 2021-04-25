@@ -18,20 +18,6 @@ void Clouds::drawContents() {
   Vector3D cam_pos = camera.position();
 
 
-  /* Draw BoundingBox */
-  {
-    auto& user_shad = shader_map["BoundingBox"];
-
-    GLShader& shader = *(user_shad.nanogui_shader);
-    shader.bind();
-
-    // Prepare the camera projection matrix
-    shader.setUniform("u_model", model);
-    shader.setUniform("u_view_projection", viewProjection);
-
-    drawBoundingBox( shader );
-  }
-
   /* Draw Bounding Points */
   {
     auto& user_shad = shader_map["WorleyPoints"];
@@ -109,6 +95,21 @@ void Clouds::drawContents() {
 
     drawPointLight( shader );
   }
+
+  /* Draw BoundingBox */
+  {
+    auto& user_shad = shader_map["BoundingBox"];
+
+    GLShader& shader = *(user_shad.nanogui_shader);
+    shader.bind();
+
+    // Prepare the camera projection matrix
+    shader.setUniform("u_model", model);
+    shader.setUniform("u_view_projection", viewProjection);
+
+    drawBoundingBox( shader );
+  }
+
 
   /* Draw Triangle */
   {
