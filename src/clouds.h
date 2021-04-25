@@ -64,6 +64,7 @@ private:
   void drawWorleyPoints( GLShader& );
   void drawDensityPoints( GLShader& );
   void drawLines( GLShader& );
+  void drawPointLight( GLShader& );
   
   void load_shaders();
   void load_textures();
@@ -140,6 +141,8 @@ private:
   IntBox<int>* num_cells_box;
 
   MatrixXf* lines = nullptr;
+
+  Vector4f pt_light_pos = Vector4f( 0, 2, -2, 1 );
 
   // Default simulation values
   int frames_per_sec = 90;

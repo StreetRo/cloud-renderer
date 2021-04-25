@@ -475,6 +475,21 @@ void Clouds::drawContents() {
     if ( enableLinesDraw ) { drawLines( shader ); }
   }
 
+  /* Draw Point Light */
+  {
+    auto& user_shad = shader_map["PointLight"];
+
+    GLShader& shader = *(user_shad.nanogui_shader);
+    shader.bind();
+
+    // Prepare the camera projection matrix
+    shader.setUniform("u_model", model);
+    shader.setUniform("u_view_projection", viewProjection);
+
+    drawPointLight( shader );
+  }
+
+
   /* Draw Triangle */
   {
     auto& user_shad = shader_map["Default"];
@@ -539,6 +554,13 @@ void Clouds::drawLines( GLShader &shader ) {
     shader.uploadAttrib( "in_position", *lines );
     shader.drawArray( GL_LINES, 0, lines->cols() );
   }
+}
+
+void Clouds::drawPointLight( GLShader &shader ) {
+  shader.setUniform( "u_color", nanogui::Color( 1.f, 0.96f, 0.5f, 1.0f ) );
+  shader.uploadAttrib( "in_pt_light_pos", pt_light_pos );
+
+  shader.drawArray( GL_POINTS, 0, 1 );
 }
 
 void Clouds::drawTriangle(GLShader &shader) {
