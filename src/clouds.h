@@ -135,7 +135,7 @@ private:
 
   // Local Persistent Objects
   int n_pts = 5000000;
-  int num_cells = 1;
+  int num_cells = 2;
   float pt_size = 10;
   MatrixXf* positions = nullptr;
   MatrixXf* density_pts = nullptr;
