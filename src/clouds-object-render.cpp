@@ -149,7 +149,16 @@ void Clouds::drawBoundingBoxLines( GLShader &shader ) {
 }
 
 void Clouds::drawBoundingBoxSurface( GLShader &shader ) {
-  shader.setUniform( "u_color", nanogui::Color( 0.f, 0.56, 0.98, 0.5 )  );
+  shader.setUniform( "u_density_tex", density_tex_unit, false );
+  shader.setUniform( "u_bbox_min", bbox_min );
+  shader.setUniform( "u_bbox_max", bbox_max );
+
+  shader.setUniform( "u_cloud_scale", cloud_scale );
+  shader.setUniform( "u_cloud_offset", cloud_offset );
+  shader.setUniform( "u_density_thresh", density_thresh );
+  shader.setUniform( "u_density_mult", density_mult );
+  shader.setUniform( "u_density_samples", density_samples );
+
   shader.uploadAttrib( "in_position", bbox_tris );
   shader.drawArray( GL_TRIANGLES, 0, bbox_tris.cols() );
 }

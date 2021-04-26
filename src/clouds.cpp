@@ -208,8 +208,14 @@ void Clouds::init() {
   camera.configure(camera_info, screen_w, screen_h);
   canonicalCamera.configure(camera_info, screen_w, screen_h);
 
+  // only generate texture once
+  glGenTextures( 1, &density_tex_id );
+
   generateBoundingBox();
   generatePoints();
+
+  // Must come after generating density values
+  generateDensityTexture();
 }
 
 bool Clouds::isAlive() { return is_alive; }
@@ -495,6 +501,35 @@ void Clouds::generateBoundingBox() {
   bbox_tris.col( 35 ) = Vector3f( b.x() , a.y() , a.z() );
 }
 
+void Clouds::generateDensityTexture() {
+  glActiveTexture( GL_TEXTURE0 + density_tex_unit );
+  glBindTexture( GL_TEXTURE_3D, density_tex_id );
+
+  // set the texture wrapping/filtering options (on the currently bound texture object)
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // load and generate the texture
+  glTexImage3D(
+      GL_TEXTURE_3D,
+      0,         // mipmap level ?
+      GL_RGB,    // internal format
+      num_cells, // width
+      num_cells, // height
+      num_cells, // depth
+      0,         // border
+      GL_RGB,    // format
+      GL_UNSIGNED_BYTE,  // type
+      density_vals->data() );
+
+  // glGenerateMipmap(GL_TEXTURE_3D);
+
+  // glTextureBuffer( density_tex_id, GL_RGB32F, density_vals->data() );
+
+}
+
 // ----------------------------------------------------------------------------
 // CAMERA CALCULATIONS
 //
@@ -754,6 +789,7 @@ void Clouds::initGUI(Screen *screen) {
     num_cells_box->setCallback([this](int value) {
         num_cells = value;
         generatePoints();
+        generateDensityTexture();
     });
 
     new Label(panel, "pt size :", "sans-bold");
@@ -817,6 +853,102 @@ void Clouds::initGUI(Screen *screen) {
     fb3->setCallback([this](float value) { 
         bbox_max.z() = value;
         generateBoundingBox();
+    });
+  }
+
+  new Label(window, "Density Sampling", "sans-bold");
+  {
+    Widget *panel = new Widget(window);
+    GridLayout *layout =
+        new GridLayout(Orientation::Horizontal, 2, Alignment::Middle, 5, 5);
+    layout->setColAlignment({Alignment::Maximum, Alignment::Fill});
+    layout->setSpacing(0, 10);
+    panel->setLayout(layout);
+
+    new Label(panel, "Cloud scale :", "sans-bold");
+    FloatBox<double> *fb1 = new FloatBox<double>(panel);
+    fb1->setEditable(true);
+    fb1->setFixedSize(Vector2i(100, 20));
+    fb1->setFontSize(14);
+    fb1->setValue( cloud_scale );
+    fb1->setUnits("units");
+    fb1->setSpinnable(true);
+    fb1->setCallback([this](float value) { 
+        cloud_scale = value;
+    });
+
+    new Label(panel, "Density mult :", "sans-bold");
+    FloatBox<double> *fb2 = new FloatBox<double>(panel);
+    fb2->setEditable(true);
+    fb2->setFixedSize(Vector2i(100, 20));
+    fb2->setFontSize(14);
+    fb2->setValue( density_mult );
+    fb2->setUnits("units");
+    fb2->setSpinnable(true);
+    fb2->setCallback([this](float value) { 
+        density_mult = value;
+    });
+
+    new Label(panel, "Density thresh :", "sans-bold");
+    FloatBox<double> *fb3 = new FloatBox<double>(panel);
+    fb3->numberFormat("%2f");
+    fb3->setEditable(true);
+    fb3->setFixedSize(Vector2i(100, 20));
+    fb3->setFontSize(14);
+    fb3->setValue( density_thresh );
+    fb3->setUnits("units");
+    fb3->setSpinnable(true);
+    fb3->setCallback([this](float value) { 
+        density_thresh = value;
+    });
+
+    new Label(panel, "Density samples :", "sans-bold");
+    IntBox<int> *fb4 = new IntBox<int>(panel);
+    fb4->setEditable(true);
+    fb4->setFixedSize(Vector2i(100, 20));
+    fb4->setFontSize(14);
+    fb4->setValue( density_samples );
+    fb4->setMinValue( 1 );
+    fb4->setUnits("units");
+    fb4->setSpinnable(true);
+    fb4->setCallback([this](int value) { 
+        density_samples = value;
+    });
+
+    new Label(panel, "Offset x :", "sans-bold");
+    IntBox<int> *fb5 = new IntBox<int>(panel);
+    fb5->setEditable(true);
+    fb5->setFixedSize(Vector2i(100, 20));
+    fb5->setFontSize(10);
+    fb5->setValue( cloud_offset.x() );
+    fb5->setUnits("units");
+    fb5->setSpinnable(true);
+    fb5->setCallback([this](int value) { 
+        cloud_offset.x() = value;
+    });
+
+    new Label(panel, "Offset y :", "sans-bold");
+    IntBox<int> *fb6 = new IntBox<int>(panel);
+    fb6->setEditable(true);
+    fb6->setFixedSize(Vector2i(100, 20));
+    fb6->setFontSize(10);
+    fb6->setValue( cloud_offset.y() );
+    fb6->setUnits("units");
+    fb6->setSpinnable(true);
+    fb6->setCallback([this](int value) { 
+        cloud_offset.y() = value;
+    });
+
+    new Label(panel, "Offset z :", "sans-bold");
+    IntBox<int> *fb7 = new IntBox<int>(panel);
+    fb7->setEditable(true);
+    fb7->setFixedSize(Vector2i(100, 20));
+    fb7->setFontSize(10);
+    fb7->setValue( cloud_offset.z() );
+    fb7->setUnits("units");
+    fb7->setSpinnable(true);
+    fb7->setCallback([this](int value) { 
+        cloud_offset.z() = value;
     });
   }
 

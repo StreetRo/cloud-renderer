@@ -77,6 +77,7 @@ private:
   void generateWorleyPoints(int numberOfCells);
   void generateDensityValues(int numberOfCells);
   void generateBoundingBox();
+  void generateDensityTexture();
 
   // File management
   std::string m_project_root;
@@ -152,6 +153,16 @@ private:
   MatrixXf bbox_tris = MatrixXf( 3, 36 );
   Vector3f bbox_min = Vector3f( 0.f, 0.f, 0.f );
   Vector3f bbox_max = Vector3f( 0.5f, 0.5f, 0.5f );
+
+  /* !DENSITY! */
+  GLuint density_tex_id;
+  GLuint density_tex_unit = 6;
+  
+  float    cloud_scale     = 50;
+  Vector3f cloud_offset    = Vector3f( 0, 0, 0 );
+  int      density_samples = 100;
+  float    density_thresh  = 0.1;
+  float    density_mult    = 5;
 
   // Default simulation values
   int frames_per_sec = 90;
