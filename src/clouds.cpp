@@ -193,7 +193,7 @@ void Clouds::init() {
 
   view_distance = canonical_view_distance * 2;
   min_view_distance = canonical_view_distance / 10.0;
-  max_view_distance = canonical_view_distance * 20.0;
+  max_view_distance = canonical_view_distance * 200.0;
 
   // canonicalCamera is a copy used for view resets
 
