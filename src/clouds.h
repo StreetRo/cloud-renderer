@@ -87,7 +87,9 @@ private:
   virtual Matrix4f getProjectionMatrix();
   virtual Matrix4f getViewMatrix();
 
-  // GUI params
+  /*
+   * GUI Params
+   */
   bool button1 = true;
   float param1 = 0.0;
   long slider = 0;
@@ -99,42 +101,15 @@ private:
   bool enableDensityDraw = true;
   bool enableLinesDraw = true;
 
-  // TODO: refactor this in draw loops
-  const std::vector<Vector3f> offsets = {
-      // centre
-      Vector3f(0.f,0.f,0.f),
-      // front face
-      Vector3f(0.f,0.f,1.f),
-      Vector3f(-1.f,1.f,1.f),
-      Vector3f(-1.f,0.f,1.f),
-      Vector3f(-1.f,-1.f,1.f),
-      Vector3f(0.f,1.f,1.f),
-      Vector3f(0.f,-1.f,1.f),
-      Vector3f(1.f,1.f,1.f),
-      Vector3f(1.f,0.f,1.f),
-      Vector3f(1.f,-1.f,1.f),
-      // back face
-      Vector3f(0.f,0.f,-1.f),
-      Vector3f(-1.f,1.f,-1.f),
-      Vector3f(-1.f,0.f,-1.f),
-      Vector3f(-1.f,-1.f,-1.f),
-      Vector3f(0.f,1.f,-1.f),
-      Vector3f(0.f,-1.f,-1.f),
-      Vector3f(1.f,1.f,-1.f),
-      Vector3f(1.f,0.f,-1.f),
-      Vector3f(1.f,-1.f,-1.f),
-      // ring around centre
-      Vector3f(-1.f,1.f,0.f),
-      Vector3f(-1.f,0.f,0.f),
-      Vector3f(-1.f,-1.f,0.f),
-      Vector3f(0.f,1.f,0.f),
-      Vector3f(0.f,-1.f,0.f),
-      Vector3f(1.f,1.f,0.f),
-      Vector3f(1.f,0.f,0.f),
-      Vector3f(1.f,-1.f,0.f)
-  };
+  /*
+   * Lighting
+   */
+  Vector4f pt_light_pos = Vector4f( 0, 2, -2, 1 );
 
-  // Local Persistent Objects
+
+  /*
+   * Worley noise texture
+   */
   int num_cells = 2;
   float pt_size = 10;
   MatrixXf* positions = nullptr;
@@ -142,21 +117,25 @@ private:
   MatrixXf* density_vals = nullptr;
   MatrixXf* worley_pts = nullptr;
   IntBox<int>* num_cells_box;
-
   MatrixXf* lines = nullptr;
 
-  Vector4f pt_light_pos = Vector4f( 0, 2, -2, 1 );
-
-  // Bounding Box
-  MatrixXf bbox_pts = MatrixXf( 3, 24 );
-  MatrixXf bbox_tris = MatrixXf( 3, 36 );
-  Vector3f bbox_min = Vector3f( 0.f, 0.f, 0.f );
-  Vector3f bbox_max = Vector3f( 0.5f, 0.5f, 0.5f );
-
-  /* !DENSITY! */
+  /*
+   * Density texture
+   */
   GLuint density_tex_id;
-  GLuint density_tex_unit = 6;
+
+  /*
+   * Bounding Box
+   */
+  MatrixXf bbox_pts  = MatrixXf( 3, 24 );
+  MatrixXf bbox_tris = MatrixXf( 3, 36 );
+  Vector3f bbox_min  = Vector3f( 0.f, 0.f, 0.f );
+  Vector3f bbox_max  = Vector3f( 0.5f, 0.5f, 0.5f );
+  const GLuint density_tex_unit = 6;
   
+  /*
+   * Cloud Parameters
+   */
   float    cloud_scale     = 5;
   Vector3f cloud_offset    = Vector3f( 0, 0, 0 );
   int      density_samples = 100;
@@ -229,6 +208,41 @@ private:
   bool is_alive = true;
 
   Vector2i default_window_size = Vector2i(800, 600);
+
+  // TODO: refactor this in draw loops
+  const std::vector<Vector3f> offsets = {
+      // centre
+      Vector3f(0.f,0.f,0.f),
+      // front face
+      Vector3f(0.f,0.f,1.f),
+      Vector3f(-1.f,1.f,1.f),
+      Vector3f(-1.f,0.f,1.f),
+      Vector3f(-1.f,-1.f,1.f),
+      Vector3f(0.f,1.f,1.f),
+      Vector3f(0.f,-1.f,1.f),
+      Vector3f(1.f,1.f,1.f),
+      Vector3f(1.f,0.f,1.f),
+      Vector3f(1.f,-1.f,1.f),
+      // back face
+      Vector3f(0.f,0.f,-1.f),
+      Vector3f(-1.f,1.f,-1.f),
+      Vector3f(-1.f,0.f,-1.f),
+      Vector3f(-1.f,-1.f,-1.f),
+      Vector3f(0.f,1.f,-1.f),
+      Vector3f(0.f,-1.f,-1.f),
+      Vector3f(1.f,1.f,-1.f),
+      Vector3f(1.f,0.f,-1.f),
+      Vector3f(1.f,-1.f,-1.f),
+      // ring around centre
+      Vector3f(-1.f,1.f,0.f),
+      Vector3f(-1.f,0.f,0.f),
+      Vector3f(-1.f,-1.f,0.f),
+      Vector3f(0.f,1.f,0.f),
+      Vector3f(0.f,-1.f,0.f),
+      Vector3f(1.f,1.f,0.f),
+      Vector3f(1.f,0.f,0.f),
+      Vector3f(1.f,-1.f,0.f)
+  };
 };
 
 #endif // CGL_CLOUDS_SIM_H
