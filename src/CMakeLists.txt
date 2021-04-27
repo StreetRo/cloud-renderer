@@ -6,6 +6,7 @@ set(CLOUDS_VIEWER_SOURCE
     main.cpp
     clouds.cpp
     clouds-object-render.cpp
+    clouds-noise-generate.cpp
 
     # Miscellaneous
     # png.cpp

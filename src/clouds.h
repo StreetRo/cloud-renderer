@@ -158,7 +158,7 @@ private:
   GLuint density_tex_id;
   GLuint density_tex_unit = 6;
   
-  float    cloud_scale     = 50;
+  float    cloud_scale     = 5;
   Vector3f cloud_offset    = Vector3f( 0, 0, 0 );
   int      density_samples = 100;
   float    density_thresh  = 0.1;
