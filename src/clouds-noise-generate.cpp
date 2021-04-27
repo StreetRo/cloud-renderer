@@ -381,4 +381,3 @@ void Clouds::generateDensityTexture() {
       GL_UNSIGNED_BYTE,  // type
       density_vals->data() );
 }
-

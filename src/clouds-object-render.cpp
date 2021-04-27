@@ -121,7 +121,23 @@ void Clouds::drawContents() {
     shader.setUniform("u_model", model);
     shader.setUniform("u_view_projection", viewProjection);
 
-    drawBoundingBoxSurface( shader );
+    // drawBoundingBoxSurface( shader );
+  }
+
+  /* Draw Raytracing Screen for Bounding Box */
+  {
+    auto& user_shad = shader_map["RTScreen"];
+
+    GLShader& shader = *(user_shad.nanogui_shader);
+    shader.bind();
+
+    // Prepare the camera projection matrix
+    shader.setUniform("u_model", model);
+    shader.setUniform("u_projection", projection);
+    shader.setUniform("u_view_projection", viewProjection);
+    shader.setUniform("u_cam_pos", Vector3f( cam_pos.x, cam_pos.y, cam_pos.z ));
+
+    drawRTScreen( shader );
   }
 
 
@@ -140,6 +156,49 @@ void Clouds::drawContents() {
 
     // drawTriangle( shader );
   }
+}
+
+void Clouds::drawRTScreen( GLShader &shader ) {
+  if ( rt_screen_tris == nullptr ) {
+    rt_screen_tris = new MatrixXf( 3, 6 );
+
+    // Pin RTScreen to projection
+    // 1.33x0.66 because of aspect ratio 800x600 hardcoded in glfwCreateWindow?
+    Vector3D screen_center = Vector3D(  0,  0,   -0.01 );
+    Vector3D a             = Vector3D( -1,  0.5, -0.01 );
+    Vector3D b             = Vector3D(  1, -0.5, -0.01 );
+    // Vector3D a             = Vector3D( -1.33,  0.66, -1 ); // top left
+    // Vector3D b             = Vector3D(  1.33, -0.66, -1 ); // bottom right
+
+    rt_screen_tris->col( 0 ) = Vector3f( a.x , a.y , a.z );
+    rt_screen_tris->col( 1 ) = Vector3f( a.x , b.y , a.z );
+    rt_screen_tris->col( 2 ) = Vector3f( b.x , a.y , a.z );
+
+    rt_screen_tris->col( 3 ) = Vector3f( b.x , a.y , a.z );
+    rt_screen_tris->col( 4 ) = Vector3f( a.x , b.y , a.z );
+    rt_screen_tris->col( 5 ) = Vector3f( b.x , b.y , a.z );
+
+    // *rt_screen_tris *= getProjectionMatrix();
+  }
+
+  shader.setUniform( "u_bbox_min", bbox_min );
+  shader.setUniform( "u_bbox_max", bbox_max );
+
+  Vector3D cam_dir = camera.view_point().unit();
+  shader.setUniform( "u_rt_screen_norm", Vector3f( cam_dir.x, cam_dir.y, cam_dir.z ) );
+
+  // Matrix3x3 _c2w = camera.c2w;
+  // Matrix3f c2w;
+  // for ( int i = 0 ; i < 3 ; i++ ) {
+    // for ( int j = 0 ; j < 3 ; j++ ) {
+      // c2w(i, j) = _c2w[i][j];
+    // }
+  // }
+  // shader.setUniform( "u_c2w", c2w );
+
+  shader.setUniform( "u_color", nanogui::Color( 1.f, 0.f, 0.0f, 0.5 )  );
+  shader.uploadAttrib( "in_position", *rt_screen_tris );
+  shader.drawArray( GL_TRIANGLES, 0, rt_screen_tris->cols() );
 }
 
 void Clouds::drawBoundingBoxLines( GLShader &shader ) {
