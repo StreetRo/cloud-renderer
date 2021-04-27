@@ -23,6 +23,7 @@ out vec4 v_position;
 out vec4 v_normal;
 out vec2 v_uv;
 out vec4 v_tangent;
+out mat4 v_view;
 
 // Every shader features a "main" function.
 // This is typically where we write to the "out" variables that the
@@ -37,8 +38,10 @@ void main() {
   v_normal = normalize(u_model * in_normal);
   v_uv = in_uv;
   v_tangent = normalize(u_model * in_tangent);
+  v_view = u_view_projection;
   
   // The final screen-space location of this vertex which the
   // GPU's triangle rasterizer takes in.
+  // gl_Position = v_position;
   gl_Position = u_view_projection * u_model * in_position;
 }

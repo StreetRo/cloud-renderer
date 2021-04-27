@@ -17,24 +17,44 @@ uniform float u_density_thresh;
 uniform float u_density_mult;
 uniform int u_density_samples;
 
+uniform mat3 u_c2w;
+
 in vec4 v_position;
 in vec4 v_normal;
+in mat4 v_view;
 
 out vec4 out_color;
 
 vec2 rayBoxDst(vec3 boundsMin, vec3 boundsMax, vec3 rayOrigin, vec3 invRaydir);
 
+float scale( float val, float xmin, float xmax, float ymin, float ymax ) {
+    return ymin + ( val - xmin ) * ( ymax - ymin ) / ( xmax - xmin );
+}
+
 
 float sampleDensity( vec3 pos ) {
-    vec3 xyz = pos * u_cloud_scale * 0.001 + u_cloud_offset * 0.01;
-    float d = texture( u_density_tex, xyz ).x;
+    vec3 xyz = -pos * u_cloud_scale * 0.01 + u_cloud_offset * 0.01;
+    vec4 noise = texture( u_density_tex, xyz );
 
+    // float shape_noise = noise.g * 0.625;
+    // shape_noise = -(1 - shape_noise);
+    // shape_noise = scale( noise.r, shape_noise, 1.f, 0.f, 1.f );
+
+    // return max( 0, shape_noise - u_density_thresh * 0.1 ) * u_density_mult;
+
+
+    // float d = noise.g;
+    float d = scale( noise.r, ( noise.g * 0.625          ) - 1, 1, 0, 1 );
     return max( 0, d - u_density_thresh * 0.1 ) * u_density_mult;
 }
 
 void main() {
-    vec3 wo = normalize( u_cam_pos - vec3( 2. * v_position ) );
-    vec2 distances = rayBoxDst( u_bbox_min, u_bbox_max, u_cam_pos, -wo );
+    vec3 frag_pos = vec3( v_position );
+    // vec3 c = u_cam_pos;
+    // vec3 c = u_cam_pos;
+    vec3 c = vec3( 1000., 1000., 1000. );
+    vec3 wo = normalize( c - vec3( frag_pos ) );
+    vec2 distances = rayBoxDst( u_bbox_min, u_bbox_max, c, -wo );
     float d_to_box = distances.x;
     float d_in_box = distances.y;
 
@@ -44,7 +64,7 @@ void main() {
     float step_size = d_in_box / u_density_samples;
     while ( d_travd < d_in_box ) {
 
-        vec3 v = u_cam_pos + ( d_travd + d_to_box ) * -wo;
+        vec3 v = c + ( d_travd + d_to_box ) * -wo;
 
         d += sampleDensity( v ) * step_size;
 
@@ -52,8 +72,24 @@ void main() {
         n += 1;
     }
 
-    d = exp( -( d ) );
-    out_color = vec4( d, d, d, d );
+    d = exp( -( 1 - d ) );
+
+    float dd = d <= 0.375 ? 0 : d; // 0.375 to make cube invisible
+
+    // vec4 noise = texture( u_density_tex, vec3( 0, 0, 0.75 ) / u_bbox_max );
+
+
+
+
+    // vec4 noise = texture( u_density_tex, vec3( frag_pos ) / 2 * 100 );
+    // out_color = vec4( noise.g, noise.g, noise.g, 1 );
+    // out_color = vec4( noise.r, noise.r, noise.r, 1 );
+    out_color = vec4( d, d, d, dd );
+    // out_color = vec4( v_position.x, 0, 0, 1 );
+    // out_color = vec4( 0, v_position.y, 0, 1 );
+    // out_color = vec4( 0, 0, frag_pos.z, 1 );
+    // out_color = vec4( frag_pos.x, frag_pos.y, frag_pos.z, 1 );
+    // out_color = vec4( v_position.x / u_bbox_max.x, 0, 0, 1 );
 }
 
 
@@ -76,8 +112,13 @@ vec2 rayBoxDst(vec3 boundsMin, vec3 boundsMax, vec3 rayOrigin, vec3 invRaydir) {
 
     // CASE 3: ray misses box (dstA > dstB)
 
-    float dstToBox = max(0, dstA);
-    float dstInsideBox = max(0, dstB - dstToBox);
+    float dstToBox = dstA;
+    float dstInsideBox = dstB - dstToBox;
     return vec2(dstToBox, dstInsideBox);
+
+
+    // float dstToBox = max(0, dstA);
+    // float dstInsideBox = max(0, dstB - dstToBox);
+    // return vec2(dstToBox, dstInsideBox);
 }
 

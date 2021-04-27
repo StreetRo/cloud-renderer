@@ -213,9 +213,6 @@ void Clouds::init() {
 
   generateBoundingBox();
   generatePoints();
-
-  // Must come after generating density values
-  generateDensityTexture();
 }
 
 bool Clouds::isAlive() { return is_alive; }

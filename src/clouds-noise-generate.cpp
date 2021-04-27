@@ -142,6 +142,7 @@ void Clouds::generateDensityValues(int numberOfCells) {
   if ( density_vals != nullptr ) { delete density_vals; }
   density_vals = new MatrixXf( 3, matrixDimension * matrixDimension );
   float density_cell_size = cell_size / numberOfCells;
+  generateDensityTexture();
 
   if ( lines != nullptr ) { delete lines; }
   lines = new MatrixXf( 3, 2 * matrixDimension * matrixDimension );
@@ -152,12 +153,14 @@ void Clouds::generateDensityValues(int numberOfCells) {
     for ( int y = 0 ; y < numberOfCells ; y++ ) {
       for ( int z = 0 ; z < numberOfCells ; z++ ) {
         int i = z + y * numberOfCells + x * numberOfCells * numberOfCells; // cell index
+        /* int i = x + y * numberOfCells + z * numberOfCells * numberOfCells; // cell index */
         Vector3f corner = Vector3f( x, y, z ) * cell_size;
 
         // for each density block inside the cell
         for ( int xx = 0 ; xx < numberOfCells ; xx++ ) {
           for ( int yy = 0 ; yy < numberOfCells ; yy++ ) {
             for ( int zz = 0 ; zz < numberOfCells ; zz++ ) {
+              /* int j = xx + yy * numberOfCells + zz * numberOfCells * numberOfCells; // density cell index */
               int j = zz + yy * numberOfCells + xx * numberOfCells * numberOfCells; // density cell index
               Vector3f density_corner = corner + Vector3f( xx, yy, zz ) * density_cell_size;
               Vector3f density_center = density_corner + Vector3f( 1., 1., 1. ) * density_cell_size / 2;
@@ -178,6 +181,7 @@ void Clouds::generateDensityValues(int numberOfCells) {
                       // wrapping
 
                       // index into cells w/ wrapping
+                      /* int k = sxx + syy * numberOfCells + szz * numberOfCells * numberOfCells; */
                       int k = szz + syy * numberOfCells + sxx * numberOfCells * numberOfCells;
                       Vector3f v = worley_pts->col( k );
                       float dist = (density_center - v).norm();
@@ -199,6 +203,7 @@ void Clouds::generateDensityValues(int numberOfCells) {
                     } else {
                       // not wrapping
 
+                      /* int k = sx + sy * numberOfCells + sz * numberOfCells * numberOfCells; // index into cells w/ wrapping */
                       int k = sz + sy * numberOfCells + sx * numberOfCells * numberOfCells; // index into cells w/ wrapping
                       Vector3f v = worley_pts->col( k );
 
@@ -219,7 +224,7 @@ void Clouds::generateDensityValues(int numberOfCells) {
               // Add perlin noise on xz-plane
               float perlin = perlinNoise( density_center.x() * cell_size, density_center.z() * cell_size );
 
-              int I = i * pow( numberOfCells, 3 ) + j;
+              int I = j * pow( numberOfCells, 3 ) + i;
 
               lines->col( 2 * I ) = density_center;
               lines->col( 2 * I + 1 ) = min_pt;
@@ -304,35 +309,35 @@ void Clouds::generateBoundingBox() {
   bbox_tris.col( 1  ) = Vector3f( b.x() , a.y() , a.z() );
   bbox_tris.col( 2  ) = Vector3f( a.x() , a.y() , a.z() );
 
-  bbox_tris.col( 3  ) = Vector3f( a.x() , b.y() , a.z() );
+  bbox_tris.col( 3  ) = Vector3f( b.x() , b.y() , a.z() );
   bbox_tris.col( 4  ) = Vector3f( b.x() , a.y() , a.z() );
-  bbox_tris.col( 5  ) = Vector3f( b.x() , b.y() , a.z() );
+  bbox_tris.col( 5  ) = Vector3f( a.x() , b.y() , a.z() );
 
   // front face
-  bbox_tris.col( 6  ) = Vector3f( a.x() , a.y() , b.z() );
   bbox_tris.col( 7  ) = Vector3f( b.x() , a.y() , b.z() );
+  bbox_tris.col( 6  ) = Vector3f( a.x() , a.y() , b.z() );
   bbox_tris.col( 8  ) = Vector3f( a.x() , b.y() , b.z() );
 
-  bbox_tris.col( 9  ) = Vector3f( b.x() , b.y() , b.z() );
+  bbox_tris.col( 9 ) = Vector3f( a.x() , b.y() , b.z() );
   bbox_tris.col( 10 ) = Vector3f( b.x() , a.y() , b.z() );
-  bbox_tris.col( 11 ) = Vector3f( a.x() , b.y() , b.z() );
+  bbox_tris.col( 11 ) = Vector3f( b.x() , b.y() , b.z() );
 
   // left side
-  bbox_tris.col( 12 ) = Vector3f( a.x() , a.y() , a.z() );
   bbox_tris.col( 13 ) = Vector3f( a.x() , a.y() , b.z() );
+  bbox_tris.col( 12 ) = Vector3f( a.x() , a.y() , a.z() );
   bbox_tris.col( 14 ) = Vector3f( a.x() , b.y() , a.z() );
 
-  bbox_tris.col( 15 ) = Vector3f( a.x() , b.y() , b.z() );
+  bbox_tris.col( 15 ) = Vector3f( a.x() , b.y() , a.z() );
   bbox_tris.col( 16 ) = Vector3f( a.x() , a.y() , b.z() );
-  bbox_tris.col( 17 ) = Vector3f( a.x() , b.y() , a.z() );
+  bbox_tris.col( 17 ) = Vector3f( a.x() , b.y() , b.z() );
 
   // right side
-  bbox_tris.col( 18 ) = Vector3f( b.x() , a.y() , a.z() );
+  bbox_tris.col( 18 ) = Vector3f( b.x() , b.y() , a.z() );
   bbox_tris.col( 19 ) = Vector3f( b.x() , a.y() , b.z() );
-  bbox_tris.col( 20 ) = Vector3f( b.x() , b.y() , a.z() );
+  bbox_tris.col( 20 ) = Vector3f( b.x() , a.y() , a.z() );
 
-  bbox_tris.col( 21 ) = Vector3f( b.x() , b.y() , b.z() );
   bbox_tris.col( 22 ) = Vector3f( b.x() , a.y() , b.z() );
+  bbox_tris.col( 21 ) = Vector3f( b.x() , b.y() , b.z() );
   bbox_tris.col( 23 ) = Vector3f( b.x() , b.y() , a.z() );
 
   // top
@@ -340,14 +345,14 @@ void Clouds::generateBoundingBox() {
   bbox_tris.col( 25 ) = Vector3f( a.x() , b.y() , b.z() );
   bbox_tris.col( 26 ) = Vector3f( b.x() , b.y() , a.z() );
 
-  bbox_tris.col( 27 ) = Vector3f( b.x() , b.y() , b.z() );
+  bbox_tris.col( 27 ) = Vector3f( b.x() , b.y() , a.z() );
   bbox_tris.col( 28 ) = Vector3f( a.x() , b.y() , b.z() );
-  bbox_tris.col( 29 ) = Vector3f( b.x() , b.y() , a.z() );
+  bbox_tris.col( 29 ) = Vector3f( b.x() , b.y() , b.z() );
 
-  // top
-  bbox_tris.col( 30 ) = Vector3f( a.x() , a.y() , a.z() );
+  // bottom
+  bbox_tris.col( 30 ) = Vector3f( b.x() , a.y() , a.z() );
   bbox_tris.col( 31 ) = Vector3f( a.x() , a.y() , b.z() );
-  bbox_tris.col( 32 ) = Vector3f( b.x() , a.y() , a.z() );
+  bbox_tris.col( 32 ) = Vector3f( a.x() , a.y() , a.z() );
 
   bbox_tris.col( 33 ) = Vector3f( b.x() , a.y() , b.z() );
   bbox_tris.col( 34 ) = Vector3f( a.x() , a.y() , b.z() );
@@ -360,7 +365,7 @@ void Clouds::generateBoundingBox() {
  */
 void Clouds::generateDensityTexture() {
   glActiveTexture( GL_TEXTURE0 + density_tex_unit );
-  glBindTexture( GL_TEXTURE_3D, density_tex_id );
+  glBindTexture( GL_TEXTURE, density_tex_id );
 
   // set the texture wrapping/filtering options (on the currently bound texture object)
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);	

@@ -1,8 +1,17 @@
 #include "clouds.h"
 
 void Clouds::drawContents() {
+  /* glDisable(GL_LIGHTING); */
+
+  glEnable(GL_CULL_FACE);  
+  /* glCullFace(GL_BACK);   */
+  /* glDisable( GL_DEPTH_TEST ); */
   glEnable( GL_DEPTH_TEST );
+  /* glDisable( GL_BLEND ); */
   glEnable( GL_BLEND );
+  /* glBlendFunc( GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA ); */
+  // glBlendFunc( GL_SRC_ALPHA, GL_SRC_ALPHA );
+  // glBlendFunc( GL_SRC_ALPHA, GL_DST_ALPHA );
   glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
   /*
@@ -107,7 +116,7 @@ void Clouds::drawContents() {
     shader.setUniform("u_model", model);
     shader.setUniform("u_view_projection", viewProjection);
 
-    drawBoundingBoxLines( shader );
+    // drawBoundingBoxLines( shader );
   }
 
   /* Draw Bounding Box Surface */
@@ -120,6 +129,7 @@ void Clouds::drawContents() {
     // Prepare the camera projection matrix
     shader.setUniform("u_model", model);
     shader.setUniform("u_view_projection", viewProjection);
+    shader.setUniform("u_cam_pos", Vector3f( cam_pos.x, cam_pos.y, cam_pos.z ));
 
     drawBoundingBoxSurface( shader );
   }
@@ -152,6 +162,7 @@ void Clouds::drawBoundingBoxSurface( GLShader &shader ) {
   shader.setUniform( "u_density_tex", density_tex_unit, false );
   shader.setUniform( "u_bbox_min", bbox_min );
   shader.setUniform( "u_bbox_max", bbox_max );
+  shader.setUniform( "u_c2w", camera.get_c2w() );
 
   shader.setUniform( "u_cloud_scale", cloud_scale );
   shader.setUniform( "u_cloud_offset", cloud_offset );

@@ -152,6 +152,7 @@ private:
   MatrixXf bbox_pts = MatrixXf( 3, 24 );
   MatrixXf bbox_tris = MatrixXf( 3, 36 );
   Vector3f bbox_min = Vector3f( 0.f, 0.f, 0.f );
+  /* Vector3f bbox_max = Vector3f( 1.f, 1.f, 1.f ); */
   Vector3f bbox_max = Vector3f( 0.5f, 0.5f, 0.5f );
 
   /* !DENSITY! */
@@ -161,8 +162,8 @@ private:
   float    cloud_scale     = 5;
   Vector3f cloud_offset    = Vector3f( 0, 0, 0 );
   int      density_samples = 100;
-  float    density_thresh  = 0.1;
-  float    density_mult    = 5;
+  float    density_thresh  = 6.0;
+  float    density_mult    = 10;
 
   // Default simulation values
   int frames_per_sec = 90;

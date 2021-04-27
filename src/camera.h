@@ -5,6 +5,7 @@
 
 #include "CGL/matrix3x3.h"
 #include "misc/camera_info.h"
+#include <Eigen/Dense>
 
 #include "math.h"
 
@@ -68,6 +69,22 @@ public:
   double aspect_ratio() const { return ar; }
   double near_clip() const { return nClip; }
   double far_clip() const { return fClip; }
+
+  Eigen::Matrix3f get_c2w() {
+    Eigen::Matrix3f M;
+
+    M(0, 0) = c2w[0][0];
+    M(0, 1) = c2w[0][1];
+    M(0, 2) = c2w[0][2];
+    M(1, 0) = c2w[1][0];
+    M(1, 1) = c2w[1][1];
+    M(1, 2) = c2w[1][2];
+    M(2, 0) = c2w[2][0];
+    M(2, 1) = c2w[2][1];
+    M(2, 2) = c2w[2][2];
+
+    return M;
+  };
 
   virtual void dump_settings(std::string filename);
   virtual void load_settings(std::string filename);
