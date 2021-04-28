@@ -72,6 +72,11 @@ public:
   virtual void dump_settings(std::string filename);
   virtual void load_settings(std::string filename);
 
+  // camera-to-world rotation matrix (note: also need to translate a
+  // camera-space point by 'pos' to perform a full camera-to-world
+  // transform)
+  Matrix3x3 c2w;
+
 private:
   // Computes pos, screenXDir, screenYDir from target, r, phi, theta.
   void compute_position();
@@ -84,11 +89,6 @@ private:
 
   // Orientation relative to target, and min & max distance from the target.
   double phi, theta, r, minR, maxR;
-
-  // camera-to-world rotation matrix (note: also need to translate a
-  // camera-space point by 'pos' to perform a full camera-to-world
-  // transform)
-  Matrix3x3 c2w;
 
   // Info about screen to render to; it corresponds to the camera's full field
   // of view at some distance.

@@ -121,7 +121,24 @@ void Clouds::drawContents() {
     shader.setUniform("u_model", model);
     shader.setUniform("u_view_projection", viewProjection);
 
-    drawBoundingBoxSurface( shader );
+    // drawBoundingBoxSurface( shader );
+  }
+
+  /* Draw Raytracing Screen for Bounding Box */
+  {
+    auto& user_shad = shader_map["RTScreen"];
+
+    GLShader& shader = *(user_shad.nanogui_shader);
+    shader.bind();
+
+    // Prepare the camera projection matrix
+    shader.setUniform("u_model", model);
+    shader.setUniform("u_projection", projection);
+    shader.setUniform("u_view_projection", viewProjection);
+    shader.setUniform("u_cam_pos", Vector3f( cam_pos.x, cam_pos.y, cam_pos.z ));
+    std::cout << "cam_pos: " << cam_pos << "\n";
+
+    drawRTScreen( shader );
   }
 
 
@@ -140,6 +157,56 @@ void Clouds::drawContents() {
 
     // drawTriangle( shader );
   }
+}
+
+void Clouds::drawRTScreen( GLShader &shader ) {
+  if ( rt_screen_tris == nullptr ) {
+    rt_screen_tris = new MatrixXf( 3, 6 );
+
+
+  }
+
+  Vector3D o = camera.position();
+  Vector3D cd = (camera.view_point() - camera.position()).unit();
+  Vector3D up = camera.up_dir().unit();
+  Vector3D rt = cross( cd, up ).unit(); // if cd = <1, 0, 0> and up = <0, 1, 0>, cd X up = <0, 0, 1>
+
+  // up *= 0.03125;
+  // rt *= 0.0625;
+  cd *= 2;
+
+  Vector3D a = o + cd + up - rt; // upper left
+  Vector3D b = o + cd - up + rt; // lower right
+  Vector3D c = o + cd - up - rt; // lower left
+  Vector3D d = o + cd + up + rt; // upper right
+
+  rt_screen_tris->col( 0 ) = Vector3f( a.x , a.y , a.z ); // ul
+  rt_screen_tris->col( 1 ) = Vector3f( c.x , c.y , c.z ); // ll
+  rt_screen_tris->col( 2 ) = Vector3f( d.x , d.y , d.z ); // ur
+
+  rt_screen_tris->col( 3 ) = Vector3f( b.x , b.y , b.z ); // lr
+  rt_screen_tris->col( 4 ) = Vector3f( d.x , d.y , d.z ); // ur
+  rt_screen_tris->col( 5 ) = Vector3f( c.x , c.y , c.z ); // ll
+
+  shader.setUniform( "u_bbox_min", bbox_min );
+  shader.setUniform( "u_bbox_max", bbox_max );
+
+  Matrix3f M;
+  for ( int i = 0 ; i < 3 ; i++ ) {
+    for ( int j = 0 ; j < 3 ; j++ ) {
+      M(i, j) = camera.c2w[i][j];
+    }
+  }
+
+  shader.setUniform( "u_density_tex", density_tex_unit, false );
+
+  shader.setUniform( "u_c2w", M );
+
+  shader.setUniform( "u_rt_screen_norm", Vector3f( cd.x, cd.y, cd.z ) );
+
+  shader.setUniform( "u_color", nanogui::Color( 1.f, 0.f, 0.0f, 0.5 )  );
+  shader.uploadAttrib( "in_position", *rt_screen_tris );
+  shader.drawArray( GL_TRIANGLES, 0, rt_screen_tris->cols() );
 }
 
 void Clouds::drawBoundingBoxLines( GLShader &shader ) {

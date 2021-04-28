@@ -67,6 +67,7 @@ private:
   void drawDensityPoints( GLShader& );
   void drawLines( GLShader& );
   void drawPointLight( GLShader& );
+  void drawRTScreen( GLShader &shader );
   
   void load_shaders();
   void load_textures();
@@ -132,6 +133,13 @@ private:
   Vector3f bbox_min  = Vector3f( 0.f, 0.f, 0.f );
   Vector3f bbox_max  = Vector3f( 0.5f, 0.5f, 0.5f );
   const GLuint density_tex_unit = 6;
+
+  /*
+   * Raytracing Screen for Bounding Box
+   */
+  Vector3f rt_screen_min = Vector3f( 0, 0, 0 );
+  Vector3f rt_screen_max = Vector3f( 1, 1, 1 );
+  MatrixXf* rt_screen_tris = nullptr;
   
   /*
    * Cloud Parameters
