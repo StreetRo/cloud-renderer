@@ -173,7 +173,7 @@ void Clouds::drawRTScreen( GLShader &shader ) {
 
   // up *= 0.03125;
   // rt *= 0.0625;
-  cd *= 2;
+  cd *= 0.08;
 
   Vector3D a = o + cd + up - rt; // upper left
   Vector3D b = o + cd - up + rt; // lower right
@@ -198,7 +198,7 @@ void Clouds::drawRTScreen( GLShader &shader ) {
     }
   }
 
-  shader.setUniform( "u_density_tex", density_tex_unit, false );
+  shader.setUniform( "u_density_tex", density_tex_id, false );
 
   shader.setUniform( "u_c2w", M );
 

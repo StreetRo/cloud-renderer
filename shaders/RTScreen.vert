@@ -24,6 +24,7 @@ out vec4 v_position;
 out vec4 v_normal;
 out vec2 v_uv;
 out vec4 v_tangent;
+out vec4 xy_pos;
 
 // Every shader features a "main" function.
 // This is typically where we write to the "out" variables that the
@@ -46,4 +47,5 @@ void main() {
   // gl_Position = u_projection * in_position;
   // gl_Position = u_view_projection * in_position;
   gl_Position = u_view_projection * u_model * in_position;
+  xy_pos = gl_Position;
 }

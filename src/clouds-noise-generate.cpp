@@ -68,6 +68,19 @@ float perlinNoise(float x, float y) {
     return value;
 }
 
+void Clouds::generatePerlinNoise(int width, int height) {
+  if ( perlin_noise != nullptr ) { delete perlin_noise; }
+  perlin_noise = new MatrixXf( width, height );
+
+  for (int x = 1; x < width; x++) {
+    for (int y = 1; y < height; y++) {
+      (*perlin_noise)(x, y) = perlinNoise((float)x / height, (float)y / width);
+      //std::cout << "x, y: " << x << ", " << y << " = " << (*perlin_noise)(x, y) << std::endl;
+    }
+  }
+
+}
+
 /**********************************************************************************
  *
  *                                 Cloud Generators
@@ -361,16 +374,17 @@ void Clouds::generateBoundingBox() {
 void Clouds::generateDensityTexture() {
   glActiveTexture( GL_TEXTURE0 + density_tex_unit );
   glBindTexture( GL_TEXTURE_3D, density_tex_id );
-
+  //glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, 100, 100, 100, 0, GL_RED, GL_UNSIGNED_BYTE, density_tex_id);
   // set the texture wrapping/filtering options (on the currently bound texture object)
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   // load and generate the texture
   glTexImage3D(
-      GL_TEXTURE_3D,
+    GL_TEXTURE_3D,
       0,         // mipmap level ?
       GL_RGB,    // internal format
       num_cells, // width
@@ -380,4 +394,30 @@ void Clouds::generateDensityTexture() {
       GL_RGB,    // format
       GL_UNSIGNED_BYTE,  // type
       density_vals->data() );
+}
+
+/* Generate 2D texture of Perlin Noise
+ * for testing purposes */
+void Clouds::generateDensityTexture2D() {
+  int width = 1800;
+  int height = 1800;
+
+  glActiveTexture( GL_TEXTURE0 + density_tex_unit );
+  glBindTexture( GL_TEXTURE_2D, perlin_noise_tex_id );
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // load and generate the texture
+  glTexImage2D(
+    GL_TEXTURE_2D,
+    0,         // mipmap level ?
+    GL_RG,    // internal format
+    width,  // width
+    height, // height
+    0,      // depth
+    GL_RGBA,    // format [Possibly RGBA]
+    GL_UNSIGNED_BYTE,  // type
+    perlin_noise->data() );
 }

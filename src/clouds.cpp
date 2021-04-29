@@ -213,9 +213,11 @@ void Clouds::init() {
 
   generateBoundingBox();
   generatePoints();
+  generatePerlinNoise(1800, 1800);
 
   // Must come after generating density values
-  generateDensityTexture();
+  //generateDensityTexture();
+  generateDensityTexture2D();
 }
 
 bool Clouds::isAlive() { return is_alive; }
@@ -486,7 +488,8 @@ void Clouds::initGUI(Screen *screen) {
     num_cells_box->setCallback([this](int value) {
         num_cells = value;
         generatePoints();
-        generateDensityTexture();
+        //generateDensityTexture();
+        generateDensityTexture2D();
     });
 
     new Label(panel, "pt size :", "sans-bold");

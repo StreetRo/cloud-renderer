@@ -68,6 +68,8 @@ private:
   void drawLines( GLShader& );
   void drawPointLight( GLShader& );
   void drawRTScreen( GLShader &shader );
+  void draw2DDensityPoints( GLShader &shader);
+
   
   void load_shaders();
   void load_textures();
@@ -79,6 +81,8 @@ private:
   void generateDensityValues(int numberOfCells);
   void generateBoundingBox();
   void generateDensityTexture();
+  void generateDensityTexture2D();
+  void generatePerlinNoise(int width, int height);
 
   // File management
   std::string m_project_root;
@@ -117,6 +121,13 @@ private:
   MatrixXf* density_pts = nullptr;
   MatrixXf* density_vals = nullptr;
   MatrixXf* worley_pts = nullptr;
+
+  /* 2D Perlin Noise texture */
+  MatrixXf* perlin_noise = nullptr;
+
+  /* 2D Worley Noise textures */
+  MatrixXf* density_vals_2D = nullptr;
+
   IntBox<int>* num_cells_box;
   MatrixXf* lines = nullptr;
 
@@ -124,6 +135,7 @@ private:
    * Density texture
    */
   GLuint density_tex_id;
+  GLuint perlin_noise_tex_id;
 
   /*
    * Bounding Box
