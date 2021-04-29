@@ -83,6 +83,7 @@ private:
   void generateDensityTexture();
   void generateDensityTexture2D();
   void generatePerlinNoise(int width, int height);
+  void generateWorleyNoise2D();
 
   // File management
   std::string m_project_root;
@@ -122,11 +123,9 @@ private:
   MatrixXf* density_vals = nullptr;
   MatrixXf* worley_pts = nullptr;
 
-  /* 2D Perlin Noise texture */
+  /* 2D Noise textures */
   MatrixXf* perlin_noise = nullptr;
-
-  /* 2D Worley Noise textures */
-  MatrixXf* density_vals_2D = nullptr;
+  MatrixXf* worley_noise = nullptr;
 
   IntBox<int>* num_cells_box;
   MatrixXf* lines = nullptr;
@@ -136,6 +135,7 @@ private:
    */
   GLuint density_tex_id;
   GLuint perlin_noise_tex_id;
+  GLuint worley_noise_tex_id;
 
   /*
    * Bounding Box

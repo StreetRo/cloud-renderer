@@ -8,7 +8,7 @@ uniform mat3 u_c2w;
 uniform vec3 u_light_pos;
 uniform vec3 u_light_intensity;
 
-uniform sampler2D u_density_tex;
+uniform sampler2D u_density_tex_1;
 
 uniform vec3 u_bbox_min;
 uniform vec3 u_bbox_max;
@@ -32,7 +32,7 @@ vec2 rayBoxDst(vec3 boundsMin, vec3 boundsMax, vec3 rayOrigin, vec3 invRaydir);
 
 float sampleDensity( vec3 pos ) {
     vec3 xyz = pos * u_cloud_scale * 0.001 + u_cloud_offset * 0.01;
-    float d = texture( u_density_tex, vec2(xyz) ).x;
+    float d = texture( u_density_tex_1, vec2(xyz) ).x;
 
     return max( 0, d - u_density_thresh * 0.1 ) * u_density_mult;
 }
@@ -83,8 +83,10 @@ void main() {
         // out_color = vec4( u_cam_pos, 1 ) - v_position; out_color.a = 1;
         
         // out_color = vec4( v_position.xyz, 0.5 );
-        vec4 t = texture( u_density_tex, xy_pos.xy * 10.0 );
-        out_color = vec4(t.g, t.g, t.g, 1.0);
+        vec4 t = texture( u_density_tex_1, xy_pos.xy );
+        //vec4 t = texture( u_density_tex, v_position.xy );
+        //out_color = vec4(t.r, t.g, t.b, t.a);
+        out_color = vec4(1.0, 1.0, 1.0, t.r);
         //vec4 t = texture( u_density_tex, vec3(v_position.x, v_position.y, 0.0)  );
         //out_color = vec4( 0.7, .98, .96, 0.5 );
     }

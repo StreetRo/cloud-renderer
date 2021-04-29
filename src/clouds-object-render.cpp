@@ -198,7 +198,7 @@ void Clouds::drawRTScreen( GLShader &shader ) {
     }
   }
 
-  shader.setUniform( "u_density_tex", density_tex_id, false );
+  shader.setUniform( "u_density_tex_1", density_tex_id, false );
 
   shader.setUniform( "u_c2w", M );
 

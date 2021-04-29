@@ -367,6 +367,62 @@ void Clouds::generateBoundingBox() {
   bbox_tris.col( 35 ) = Vector3f( b.x() , a.y() , a.z() );
 }
 
+void Clouds::generateWorleyNoise2D() {
+  srand (time(0));
+
+  //generate 2D Worley image
+  unsigned width = 800, height = 800;
+  std::vector<std::tuple<unsigned, unsigned>> randomPoints;
+  unsigned nBoxes = 6;
+  unsigned boxHeight = height / nBoxes;
+  unsigned boxWidth  = width  / nBoxes;
+
+  // Create worley noise matrix:
+  if ( worley_noise != nullptr ) { delete worley_noise; }
+  worley_noise = new MatrixXf( width, height );
+
+  // Create the background:
+  for(unsigned y = 0; y < height; y++) {
+    for(unsigned x = 0; x < width; x++) {
+      (*worley_noise)(x, y) = 1.0;
+    }
+  }
+
+    // Create random points:
+    for(unsigned y = 0; y < nBoxes; y++) {
+      for(unsigned x = 0; x < nBoxes; x++) {
+        unsigned xRand = rand() % boxWidth  + x * boxWidth;
+        unsigned yRand = rand() % boxHeight + y * boxHeight;
+        randomPoints.push_back(std::make_tuple(xRand, yRand));
+      }
+    }
+
+    // Shade surrounding pixels:
+    for(unsigned y = 0; y < height; y++) {
+      for(unsigned x = 0; x < width; x++) {
+
+        unsigned dist = std::max(height, width);
+
+        // Calculate distances:
+        for (std::vector<std::tuple<unsigned, unsigned>>::iterator it = randomPoints.begin() ; it != randomPoints.end(); ++it) {
+          unsigned xp = std::get<0>(*it);
+          unsigned yp = std::get<1>(*it);
+
+          unsigned d = sqrt((xp-x)*(xp-x) + (yp-y)*(yp-y));
+
+          if (d < dist) dist = d;
+        }
+
+        // Normalize the color:
+        double ddist = (double)dist / (double)std::max(2*boxHeight, 2*boxWidth);
+        ddist = ddist;
+
+        // Store color:
+        (*worley_noise)(x, y) = 1 - ddist;
+      }
+    }
+}
+
 /**
  * Fill the texture with 1 - d
  *   where d is the distance to the nearest Worley point
@@ -396,14 +452,14 @@ void Clouds::generateDensityTexture() {
       density_vals->data() );
 }
 
-/* Generate 2D texture of Perlin Noise
+/* Generate 2D texture
  * for testing purposes */
 void Clouds::generateDensityTexture2D() {
-  int width = 1800;
-  int height = 1800;
+  int width = 800;
+  int height = 800;
 
   glActiveTexture( GL_TEXTURE0 + density_tex_unit );
-  glBindTexture( GL_TEXTURE_2D, perlin_noise_tex_id );
+  glBindTexture( GL_TEXTURE_2D, worley_noise_tex_id );
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -413,11 +469,11 @@ void Clouds::generateDensityTexture2D() {
   glTexImage2D(
     GL_TEXTURE_2D,
     0,         // mipmap level ?
-    GL_RG,    // internal format
+    GL_RGB,    // internal format
     width,  // width
     height, // height
     0,      // depth
     GL_RGBA,    // format [Possibly RGBA]
     GL_UNSIGNED_BYTE,  // type
-    perlin_noise->data() );
+    worley_noise->data() );
 }

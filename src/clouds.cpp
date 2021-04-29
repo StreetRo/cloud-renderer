@@ -213,10 +213,11 @@ void Clouds::init() {
 
   generateBoundingBox();
   generatePoints();
-  generatePerlinNoise(1800, 1800);
+  //generatePerlinNoise(1800, 1800);
 
   // Must come after generating density values
   //generateDensityTexture();
+  generateWorleyNoise2D();
   generateDensityTexture2D();
 }
 
@@ -489,7 +490,9 @@ void Clouds::initGUI(Screen *screen) {
         num_cells = value;
         generatePoints();
         //generateDensityTexture();
+        generateWorleyNoise2D();
         generateDensityTexture2D();
+
     });
 
     new Label(panel, "pt size :", "sans-bold");
