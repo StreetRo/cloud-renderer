@@ -1,71 +1,55 @@
 #include "clouds.h"
 
-/* perlion noise source: https://en.wikipedia.org/wiki/Perlin_noise */
-
-/* Function to linearly interpolate between a0 and a1
- * Weight w should be in the range [0.0, 1.0]
+/*
+ * generateNoise, smoothNoise, turbulence from:
+ * https://lodev.org/cgtutor/randomnoise.html
  */
-float interpolate(float a0, float a1, float w) {
-    /* // You may want clamping by inserting:
-     * if (0.0 > w) return a0;
-     * if (1.0 < w) return a1;
-     */
-    return (a1 - a0) * w + a0;
-    /* // Use this cubic interpolation [[Smoothstep]] instead, for a smooth appearance:
-     * return (a1 - a0) * (3.0 - w * 2.0) * w * w + a0;
-     *
-     * // Use [[Smootherstep]] for an even smoother result with a second derivative equal to zero on boundaries:
-     * return (a1 - a0) * ((w * (w * 6.0 - 15.0) + 10.0) * w * w * w) + a0;
-     */
+
+std::vector<std::vector<float>> generateNoise(int dim) {
+  std::vector<std::vector<float>> noise( dim , std::vector<float>( dim, 0 ) );
+  for (int x = 0; x < dim; x++) {
+    for (int y = 0; y < dim; y++) {
+      float r = ( Vector2f::Random().x() + 1 ) / 2.f; // [0, 1]
+      noise[y][x] = r;
+    }
+  }
+
+  return noise;
 }
 
-/* Create random direction vector
- */
-Vector2f randomGradient(int ix, int iy) {
-    // Random float. No precomputed gradients mean this works for any number of grid coordinates
-    float random = 2920.f * sin(ix * 21942.f + iy * 171324.f + 8912.f) * cos(ix * 23157.f * iy * 217832.f + 9758.f);
-    return Vector2f( cos(random), sin(random) );
+float smoothNoise(std::vector<std::vector<float>>& noise, int dim, float x, float y) {
+   //get fractional part of x and y
+   float fractX = x - int(x);
+   float fractY = y - int(y);
+
+   //wrap around
+   int x1 = (int(x) + dim) % dim;
+   int y1 = (int(y) + dim) % dim;
+
+   //neighbor values
+   int x2 = (x1 + dim - 1) % dim;
+   int y2 = (y1 + dim - 1) % dim;
+
+   //smooth the noise with bilinear interpolation
+   float value = 0.0;
+   value += fractX     * fractY     * noise[y1][x1];
+   value += (1 - fractX) * fractY     * noise[y1][x2];
+   value += fractX     * (1 - fractY) * noise[y2][x1];
+   value += (1 - fractX) * (1 - fractY) * noise[y2][x2];
+
+   return value;
 }
 
-// Computes the dot product of the distance and gradient vectors.
-float dotGridGradient(int ix, int iy, float x, float y) {
-    // Get gradient from integer coordinates
-    Vector2f gradient = randomGradient(ix, iy);
+float turbulence( std::vector<std::vector<float>>& noise, int dim, float x, float y, float size) {
+  float value = 0.0, initialSize = size;
 
-    // Compute the distance vector
-    float dx = x - (float)ix;
-    float dy = y - (float)iy;
+  while(size >= 1)
+  {
+    value += smoothNoise(noise, dim, x / size, y / size) * size;
+    size /= 2.0;
+  }
 
-    // Compute the dot-product
-    return (dx*gradient.x() + dy*gradient.y());
-}
-
-// Compute Perlin noise at coordinates x, y
-float perlinNoise(float x, float y) {
-    // Determine grid cell coordinates
-    int x0 = (int)x;
-    int x1 = x0 + 1;
-    int y0 = (int)y;
-    int y1 = y0 + 1;
-
-    // Determine interpolation weights
-    // Could also use higher order polynomial/s-curve here
-    float sx = x - (float)x0;
-    float sy = y - (float)y0;
-
-    // Interpolate between grid point gradients
-    float n0, n1, ix0, ix1, value;
-
-    n0 = dotGridGradient(x0, y0, x, y);
-    n1 = dotGridGradient(x1, y0, x, y);
-    ix0 = interpolate(n0, n1, sx);
-
-    n0 = dotGridGradient(x0, y1, x, y);
-    n1 = dotGridGradient(x1, y1, x, y);
-    ix1 = interpolate(n0, n1, sx);
-
-    value = interpolate(ix0, ix1, sy);
-    return value;
+  return(128.0 * value / initialSize);
 }
 
 /**********************************************************************************
@@ -73,6 +57,43 @@ float perlinNoise(float x, float y) {
  *                                 Cloud Generators
  *
  ***********************************************************************************/
+
+void Clouds::generatePerlinNoise2DTexture( int n ) {
+  auto noise = generateNoise( n );
+  std::vector<unsigned char> perlin( n * n * 4, 0 );
+
+  for ( int x = 0 ; x < n ; x++ ) {
+    for ( int y = 0 ; y < n ; y++ ) {
+      float t = turbulence( noise, n, x, y, 32 );
+      std::cout << "t: " << t << "\n";
+      perlin[4 * n * y + 4 * x + 0] = t;
+      perlin[4 * n * y + 4 * x + 1] = t;
+      perlin[4 * n * y + 4 * x + 2] = t;
+      perlin[4 * n * y + 4 * x + 3] = 255;
+    }
+  }
+
+  glActiveTexture( GL_TEXTURE0 + perlin_noise_unit );
+  glBindTexture( GL_TEXTURE_2D, perlin_noise_id );
+
+  // set the texture wrapping/filtering options (on the currently bound texture object)
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // load and generate the texture
+  glTexImage2D(
+      GL_TEXTURE_2D,
+      0,         // mipmap level ?
+      GL_RGBA,    // internal format
+      n, // width
+      n, // height
+      0,         // border
+      GL_RGBA,    // format
+      GL_UNSIGNED_BYTE,  // type
+      perlin.data() );
+}
 
 /**
  * Generates a set of bounding points (corners) for a 3D box
@@ -217,7 +238,7 @@ void Clouds::generateDensityValues(int numberOfCells) {
               float cell_size = 1. / num_cells;
 
               // Add perlin noise on xz-plane
-              float perlin = perlinNoise( density_center.x() * cell_size, density_center.z() * cell_size );
+              // float perlin = perlinNoise( density_center.x() * cell_size, density_center.z() * cell_size );
 
               int I = i * pow( numberOfCells, 3 ) + j;
 
@@ -225,7 +246,7 @@ void Clouds::generateDensityValues(int numberOfCells) {
               lines->col( 2 * I + 1 ) = min_pt;
 
               density_pts->col( I ) = density_center;
-              density_vals->col( I ) = Vector3f( perlin, min_dist, 0 );
+              // density_vals->col( I ) = Vector3f( perlin, min_dist, 0 );
 
               // Find maximum value for nomalizing
               if ( min_dist > max_dist ) {

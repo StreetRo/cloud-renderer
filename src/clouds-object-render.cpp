@@ -31,7 +31,7 @@ void Clouds::drawContents() {
 
     shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
 
-    if ( enableBoundingPointsDraw ){ drawBoundingPoints( shader ); }
+    // if ( enableBoundingPointsDraw ){ drawBoundingPoints( shader ); }
   }
 
   /* Draw Worley Points */
@@ -47,7 +47,7 @@ void Clouds::drawContents() {
 
     shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
 
-    if ( enableWorleyDraw ){ drawWorleyPoints( shader ); }
+    // if ( enableWorleyDraw ){ drawWorleyPoints( shader ); }
   }
 
   /* Draw Density Points */
@@ -63,7 +63,7 @@ void Clouds::drawContents() {
 
     shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
 
-    if ( enableDensityDraw ){ drawDensityPoints( shader ); }
+    // if ( enableDensityDraw ){ drawDensityPoints( shader ); }
   }
 
   /* Draw lines from density pt to closest pt */
@@ -79,7 +79,7 @@ void Clouds::drawContents() {
 
     shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z), false);
 
-    if ( enableLinesDraw ) { drawLines( shader ); }
+    // if ( enableLinesDraw ) { drawLines( shader ); }
   }
 
   /* Draw Point Light */
@@ -93,7 +93,7 @@ void Clouds::drawContents() {
     shader.setUniform("u_model", model);
     shader.setUniform("u_view_projection", viewProjection);
 
-    drawPointLight( shader );
+    // drawPointLight( shader );
   }
 
   /* Draw Bounding Box Lines */
@@ -107,7 +107,7 @@ void Clouds::drawContents() {
     shader.setUniform("u_model", model);
     shader.setUniform("u_view_projection", viewProjection);
 
-    drawBoundingBoxLines( shader );
+    // drawBoundingBoxLines( shader );
   }
 
   /* Draw Bounding Box Surface */
@@ -121,9 +121,8 @@ void Clouds::drawContents() {
     shader.setUniform("u_model", model);
     shader.setUniform("u_view_projection", viewProjection);
 
-    drawBoundingBoxSurface( shader );
+    // drawBoundingBoxSurface( shader );
   }
-
 
   /* Draw Triangle */
   {
@@ -140,6 +139,43 @@ void Clouds::drawContents() {
 
     // drawTriangle( shader );
   }
+
+  /* Draw Quad Surface */
+  {
+    auto& user_shad = shader_map["QuadSurface"];
+
+    GLShader& shader = *(user_shad.nanogui_shader);
+    shader.bind();
+
+    // Prepare the camera projection matrix
+    shader.setUniform("u_model", model);
+    shader.setUniform("u_projection", projection);
+    // shader.setUniform("u_view_projection", viewProjection);
+
+    drawQuadSurface( shader );
+  }
+}
+
+void Clouds::drawQuadSurface( GLShader &shader ) {
+  Vector3D a = Vector3D( -0.5, 0.5, -1 ); // top left
+  Vector3D b = Vector3D(  0.5, -0.5, -1 ); // bottom right
+
+  // This can be sped up by not recreating it every time
+  MatrixXf tris = MatrixXf(3, 6);
+
+  tris.col( 0 ) = Vector3f( a.x , a.y , a.z ); // ul
+  tris.col( 1 ) = Vector3f( a.x , b.y , a.z ); // ll
+  tris.col( 2 ) = Vector3f( b.x , a.y , a.z ); // ur
+
+  tris.col( 3 ) = Vector3f( b.x , a.y , a.z ); // lr
+  tris.col( 4 ) = Vector3f( a.x , b.y , a.z ); // ur
+  tris.col( 5 ) = Vector3f( b.x , b.y , a.z ); // ll
+
+  shader.setUniform( "u_perlin_noise", perlin_noise_unit, false );
+
+  shader.setUniform( "u_color", nanogui::Color( 1.f, 0.f, 0.0f, 0.5 )  );
+  shader.uploadAttrib( "in_position", tris );
+  shader.drawArray( GL_TRIANGLES, 0, tris.cols() );
 }
 
 void Clouds::drawBoundingBoxLines( GLShader &shader ) {

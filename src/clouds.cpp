@@ -214,6 +214,8 @@ void Clouds::init() {
   generateBoundingBox();
   generatePoints();
 
+  generatePerlinNoise2DTexture();
+
   // Must come after generating density values
   generateDensityTexture();
 }

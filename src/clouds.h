@@ -15,6 +15,7 @@
 #include <cmath>
 #include <memory>
 
+
 using namespace CGL;
 using namespace nanogui;
 
@@ -67,6 +68,7 @@ private:
   void drawDensityPoints( GLShader& );
   void drawLines( GLShader& );
   void drawPointLight( GLShader& );
+  void drawQuadSurface( GLShader &shader );
   
   void load_shaders();
   void load_textures();
@@ -78,6 +80,7 @@ private:
   void generateDensityValues(int numberOfCells);
   void generateBoundingBox();
   void generateDensityTexture();
+  void generatePerlinNoise2DTexture( int dimension );
 
   // File management
   std::string m_project_root;
@@ -123,6 +126,9 @@ private:
    * Density texture
    */
   GLuint density_tex_id;
+
+  GLuint perlin_noise_id;
+  const GLuint perlin_noise_unit = 7;
 
   /*
    * Bounding Box
