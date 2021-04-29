@@ -54,7 +54,7 @@ void main() {
     // out_color = vec4( val, val, val, 1 );
     // out_color = vec4( u_rt_screen_norm, 0.5 );
 
-    vec2 distances = rayBoxDst( u_bbox_min, u_bbox_max, ray_orig, -ray_dir );
+    vec2 distances = rayBoxDst( u_bbox_min, u_bbox_max, ray_orig, ray_dir );
     float d_to_box = distances.x;
     float d_in_box = distances.y;
 
