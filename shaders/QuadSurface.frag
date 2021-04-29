@@ -7,7 +7,7 @@ uniform vec3 u_light_pos;
 uniform vec3 u_light_intensity;
 
 uniform sampler3D u_density_tex;
-uniform sampler2D u_perlin_noise;
+uniform sampler2D u_noise;
 
 uniform vec3 u_bbox_min;
 uniform vec3 u_bbox_max;
@@ -33,8 +33,8 @@ float sampleDensity( vec3 pos ) {
 }
 
 void main() {
-    vec4 tex = texture( u_perlin_noise, ( v_position.xy + 0.5 ) );
-    out_color = vec4( tex.x, tex.x, tex.x, 1 );
+    vec4 tex = texture( u_noise, ( v_position.xy + 0.5 ) );
+    out_color = vec4( tex.x, tex.y, 0, 1 );
     // out_color = vec4( v_position.x + 0.25, v_position.y + 0.25, tex.x, 1 );
     // out_color = vec4( v_position.x + 0.5, v_position.y + 0.5, 0, 1 );
 }

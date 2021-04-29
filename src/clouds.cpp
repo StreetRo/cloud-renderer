@@ -214,8 +214,10 @@ void Clouds::init() {
   generateBoundingBox();
   generatePoints();
 
-  generatePerlinNoise2DTexture( 32 );
-  generateWorleyNoise2DTexture( 3, 32 );
+  noise_packed = new std::vector<unsigned char>( texture_pixels * texture_pixels * 4, 0 );
+  generatePerlinNoise2DTexture( texture_pixels );
+  generateWorleyNoise2DTexture( worley_cells, texture_pixels );
+  loadPackedNoiseTexture();
 
   // Must come after generating density values
   generateDensityTexture();

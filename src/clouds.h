@@ -82,6 +82,7 @@ private:
   void generateDensityTexture();
   void generatePerlinNoise2DTexture( int dimension );
   void generateWorleyNoise2DTexture( int worley_pt_cell_dim, int pixel_dim  );
+  void loadPackedNoiseTexture();
 
   // File management
   std::string m_project_root;
@@ -110,6 +111,13 @@ private:
    */
   Vector4f pt_light_pos = Vector4f( 0, 2, -2, 1 );
 
+  /*
+   * Packed Noise
+   */
+  std::vector<unsigned char>* noise_packed = nullptr;
+
+  int worley_cells   = 8;
+  int texture_pixels = 64;
 
   /*
    * Worley noise texture
@@ -133,6 +141,9 @@ private:
 
   GLuint worley_noise_id;
   const GLuint worley_noise_unit = 8;
+
+  GLuint packed_noise_id;
+  const GLuint packed_noise_unit = 9;
 
   /*
    * Bounding Box

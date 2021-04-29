@@ -58,6 +58,32 @@ float turbulence( std::vector<std::vector<float>>& noise, int dim, float x, floa
  *
  ***********************************************************************************/
 
+/*
+ * Loads the texture in the GPU texture unit
+ */
+void Clouds::loadPackedNoiseTexture() {
+  glActiveTexture( GL_TEXTURE0 + packed_noise_unit );
+  glBindTexture( GL_TEXTURE_2D, packed_noise_id );
+
+  // set the texture wrapping/filtering options (on the currently bound texture object)
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // load and generate the texture
+  glTexImage2D(
+      GL_TEXTURE_2D,
+      0,         // mipmap level ?
+      GL_RGBA,    // internal format
+      texture_pixels, // width
+      texture_pixels, // height
+      0,         // border
+      GL_RGBA,    // format
+      GL_UNSIGNED_BYTE,  // type
+      noise_packed->data() );
+}
+
 /**
  * Generate Worley Noise
  * Creates an nxn texture with c cells
@@ -125,36 +151,15 @@ void Clouds::generateWorleyNoise2DTexture( int cs, int pxs ) {
     }
   }
 
-  std::vector<unsigned char> worley( pxs * pxs * 4, 0 );
   for ( int y = 0 ; y < pxs ; y++ ) {
     for ( int x = 0 ; x < pxs ; x++ ) {
       float d = ( 1 - dps[y][x] / max_dist ) * 255;
-      worley[4 * pxs * y + 4 * x + 0] = d;
-      worley[4 * pxs * y + 4 * x + 1] = d;
-      worley[4 * pxs * y + 4 * x + 2] = d;
-      worley[4 * pxs * y + 4 * x + 3] = 255;
+      // packed_noise[4 * pxs * y + 4 * x + 0] = d;
+      (*noise_packed)[4 * pxs * y + 4 * x + 1] = d;
+      // packed_noise[4 * pxs * y + 4 * x + 2] = d;
+      // packed_noise[4 * pxs * y + 4 * x + 3] = 255;
     }
   }
-
-  glActiveTexture( GL_TEXTURE0 + worley_noise_unit );
-  glBindTexture( GL_TEXTURE_2D, worley_noise_id );
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  // load and generate the texture
-  glTexImage2D(
-      GL_TEXTURE_2D,
-      0,         // mipmap level ?
-      GL_RGBA,    // internal format
-      pxs, // width
-      pxs, // height
-      0,         // border
-      GL_RGBA,    // format
-      GL_UNSIGNED_BYTE,  // type
-      worley.data() );
 }
 
 /**
@@ -163,38 +168,16 @@ void Clouds::generateWorleyNoise2DTexture( int cs, int pxs ) {
  */
 void Clouds::generatePerlinNoise2DTexture( int n ) {
   auto noise = generateNoise( n );
-  std::vector<unsigned char> perlin( n * n * 4, 0 );
 
   for ( int x = 0 ; x < n ; x++ ) {
     for ( int y = 0 ; y < n ; y++ ) {
       float t = turbulence( noise, n, x, y, 32 );
-      perlin[4 * n * y + 4 * x + 0] = t;
-      perlin[4 * n * y + 4 * x + 1] = t;
-      perlin[4 * n * y + 4 * x + 2] = t;
-      perlin[4 * n * y + 4 * x + 3] = 255;
+      (*noise_packed)[4 * n * y + 4 * x + 0] = t;
+      // packed_noise[4 * n * y + 4 * x + 1] = t;
+      // packed_noise[4 * n * y + 4 * x + 2] = t;
+      // packed_noise[4 * n * y + 4 * x + 3] = 255;
     }
   }
-
-  glActiveTexture( GL_TEXTURE0 + perlin_noise_unit );
-  glBindTexture( GL_TEXTURE_2D, perlin_noise_id );
-
-  // set the texture wrapping/filtering options (on the currently bound texture object)
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  // load and generate the texture
-  glTexImage2D(
-      GL_TEXTURE_2D,
-      0,         // mipmap level ?
-      GL_RGBA,    // internal format
-      n, // width
-      n, // height
-      0,         // border
-      GL_RGBA,    // format
-      GL_UNSIGNED_BYTE,  // type
-      perlin.data() );
 }
 
 /**
