@@ -173,6 +173,12 @@ void Clouds::drawQuadSurface( GLShader &shader ) {
 
   shader.setUniform( "u_noise", packed_noise_unit, false );
 
+  shader.setUniform( "u_cloud_scale", cloud_scale );
+  shader.setUniform( "u_cloud_offset", cloud_offset );
+  shader.setUniform( "u_density_thresh", density_thresh );
+  shader.setUniform( "u_density_mult", density_mult );
+  shader.setUniform( "u_density_samples", density_samples );
+
   shader.setUniform( "u_color", nanogui::Color( 1.f, 0.f, 0.0f, 0.5 )  );
   shader.uploadAttrib( "in_position", tris );
   shader.drawArray( GL_TRIANGLES, 0, tris.cols() );

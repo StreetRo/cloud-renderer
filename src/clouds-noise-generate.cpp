@@ -23,8 +23,8 @@ float smoothNoise(std::vector<std::vector<float>>& noise, int dim, float x, floa
    float fractY = y - int(y);
 
    //wrap around
-   int x1 = (int(x) + dim) % dim;
-   int y1 = (int(y) + dim) % dim;
+   int x1 = x;
+   int y1 = y;
 
    //neighbor values
    int x2 = (x1 + dim - 1) % dim;
@@ -68,8 +68,8 @@ void Clouds::loadPackedNoiseTexture() {
   // set the texture wrapping/filtering options (on the currently bound texture object)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   // load and generate the texture
   glTexImage2D(
@@ -104,60 +104,67 @@ void Clouds::generateWorleyNoise2DTexture( int cs, int pxs ) {
 
   // check every density pt
   float max_dist = std::numeric_limits<float>::min();
-  for ( int y = 0 ; y < pxs ; y++ ) {
-    for ( int x = 0 ; x < pxs ; x++ ) {
-      float cellsize = 1. / (float) cs;
+  #pragma omp parallel
+  {
+    #pragma omp for
+    for ( int y = 0 ; y < pxs ; y++ ) {
+      for ( int x = 0 ; x < pxs ; x++ ) {
+        float cellsize = 1. / (float) cs;
 
-      // need to normalize the sizes
-      float normx = (x + 0.5) / (float) pxs; // [0, 1], center of px
-      float normy = (y + 0.5) / (float) pxs; // [0, 1], center of px
+        // need to normalize the sizes
+        float normx = (x + 0.5) / (float) pxs; // [0, 1], center of px
+        float normy = (y + 0.5) / (float) pxs; // [0, 1], center of px
 
-      // Current cell
-      int cellx = normx * cs;
-      int celly = normy * cs;
+        // Current cell
+        int cellx = normx * cs;
+        int celly = normy * cs;
 
-      // Position in cells
-      float posx = normx * cs;
-      float posy = normy * cs;
+        // Position in cells
+        float posx = normx * cs;
+        float posy = normy * cs;
 
-      // Check every cell
-      float min_dist = std::numeric_limits<float>::max();
-      for ( int yy = 0 ; yy < cs ; yy++ ) {
-        for ( int xx = 0 ; xx < cs ; xx++ ) {
+        // Check every cell
+        float min_dist = std::numeric_limits<float>::max();
+        for ( int yy = 0 ; yy < cs ; yy++ ) {
+          for ( int xx = 0 ; xx < cs ; xx++ ) {
 
-          // Check this cell in every block position
-          for ( int offy = -1 ; offy < 2 ; offy++ ) {
-            for ( int offx = -1 ; offx < 2 ; offx++ ) {
-              float blockoffx = xx + offx * cs;
-              float blockoffy = yy + offy * cs;
+            // Check this cell in every block position
+            for ( int offy = -1 ; offy < 2 ; offy++ ) {
+              for ( int offx = -1 ; offx < 2 ; offx++ ) {
+                float blockoffx = xx + offx * cs;
+                float blockoffy = yy + offy * cs;
 
-              Vector2f const& wp = wps[yy][xx];
+                Vector2f const& wp = wps[yy][xx];
 
-              float wp_posx = blockoffx + wp.x();
-              float wp_posy = blockoffy + wp.y();
-              
-              Vector2f pt = Vector2f( wp_posx, wp_posy );
-              float d = (Vector2f( posx, posy ) - pt).norm();
+                float wp_posx = blockoffx + wp.x();
+                float wp_posy = blockoffy + wp.y();
 
-              min_dist = d < min_dist ? d : min_dist;
+                Vector2f pt = Vector2f( wp_posx, wp_posy );
+                float d = (Vector2f( posx, posy ) - pt).norm();
+
+                min_dist = d < min_dist ? d : min_dist;
+              }
             }
+
           }
-          
         }
+
+        dps[y][x] = min_dist;
+
+        #pragma omp critical
+        max_dist = min_dist > max_dist ? min_dist : max_dist;
       }
-
-      dps[y][x] = min_dist;
-      max_dist = min_dist > max_dist ? min_dist : max_dist;
     }
-  }
 
-  for ( int y = 0 ; y < pxs ; y++ ) {
-    for ( int x = 0 ; x < pxs ; x++ ) {
-      float d = ( 1 - dps[y][x] / max_dist ) * 255;
-      // packed_noise[4 * pxs * y + 4 * x + 0] = d;
-      (*noise_packed)[4 * pxs * y + 4 * x + 1] = d;
-      // packed_noise[4 * pxs * y + 4 * x + 2] = d;
-      // packed_noise[4 * pxs * y + 4 * x + 3] = 255;
+    #pragma omp for
+    for ( int y = 0 ; y < pxs ; y++ ) {
+      for ( int x = 0 ; x < pxs ; x++ ) {
+        float d = ( 1 - dps[y][x] / max_dist ) * 255;
+        // packed_noise[4 * pxs * y + 4 * x + 0] = d;
+        (*noise_packed)[4 * pxs * y + 4 * x + 1] = d;
+        // packed_noise[4 * pxs * y + 4 * x + 2] = d;
+        // packed_noise[4 * pxs * y + 4 * x + 3] = 255;
+      }
     }
   }
 }
@@ -169,13 +176,17 @@ void Clouds::generateWorleyNoise2DTexture( int cs, int pxs ) {
 void Clouds::generatePerlinNoise2DTexture( int n ) {
   auto noise = generateNoise( n );
 
-  for ( int x = 0 ; x < n ; x++ ) {
-    for ( int y = 0 ; y < n ; y++ ) {
-      float t = turbulence( noise, n, x, y, 32 );
-      (*noise_packed)[4 * n * y + 4 * x + 0] = t;
-      // packed_noise[4 * n * y + 4 * x + 1] = t;
-      // packed_noise[4 * n * y + 4 * x + 2] = t;
-      // packed_noise[4 * n * y + 4 * x + 3] = 255;
+  #pragma omp parallel
+  {
+    #pragma omp for
+    for ( int x = 0 ; x < n ; x++ ) {
+      for ( int y = 0 ; y < n ; y++ ) {
+        float t = turbulence( noise, n, x, y, 64 );
+        (*noise_packed)[4 * n * y + 4 * x + 0] = t;
+        // packed_noise[4 * n * y + 4 * x + 1] = t;
+        // packed_noise[4 * n * y + 4 * x + 2] = t;
+        // packed_noise[4 * n * y + 4 * x + 3] = 255;
+      }
     }
   }
 }

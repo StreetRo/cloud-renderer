@@ -15,6 +15,7 @@
 #include <cmath>
 #include <memory>
 
+#include <omp.h>
 
 using namespace CGL;
 using namespace nanogui;
@@ -117,7 +118,7 @@ private:
   std::vector<unsigned char>* noise_packed = nullptr;
 
   int worley_cells   = 8;
-  int texture_pixels = 64;
+  int texture_pixels = 256;
 
   /*
    * Worley noise texture

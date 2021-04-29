@@ -25,16 +25,42 @@ out vec4 out_color;
 
 vec2 rayBoxDst(vec3 boundsMin, vec3 boundsMax, vec3 rayOrigin, vec3 invRaydir);
 
-float sampleDensity( vec3 pos ) {
-    vec3 xyz = pos * u_cloud_scale * 0.001 + u_cloud_offset * 0.01;
-    float d = texture( u_density_tex, xyz ).x;
+float scale( float v, float lo, float ho, float ln, float hn ) {
+    return ln + ( (v - lo) * (hn - ln) ) / (ho - lo);
+}
 
-    return max( 0, d - u_density_thresh * 0.1 ) * u_density_mult;
+float sampleDensity( vec4 pos ) {
+    // vec3 xyz = pos.xyz;
+    // vec3 xyz = pos.xyz + u_cloud_offset * 0.1;
+    vec3 xyz = pos.xyz * u_cloud_scale * 0.1 + u_cloud_offset * 0.1;
+    vec4 tex = texture( u_noise, ( xyz.xy + 0.5 ) );
+
+    // Generate higher frequency worley using same texture
+    float freq2 = texture( u_noise, 4 * ( xyz.xy + 0.5 ) ).g;
+    float freq3 = texture( u_noise, 16 * ( xyz.xy + 0.5 ) ).g;
+
+    // Fractional Brownion Motion to decay the higher freq noise
+    float shape_noise = tex.g * (2/3) + freq2 * (1/2) + freq3 * (1/4);
+    shape_noise = shape_noise - 1;
+    shape_noise = scale( tex.r, shape_noise, 1, 0, 1 );
+
+    // return shape_noise;
+    // return freq3;
+    // return 1 - d;
+    return max( 0, shape_noise - u_density_thresh * 0.1 ) * u_density_mult;
 }
 
 void main() {
-    vec4 tex = texture( u_noise, ( v_position.xy + 0.5 ) );
-    out_color = vec4( tex.x, tex.y, 0, 1 );
+
+    float d = sampleDensity( v_position );
+
+    out_color = vec4( 1, 1, 1, d );
+
+    // vec4 tex = texture( u_noise, ( v_position.xy + 0.5 ) );
+    // out_color = vec4( tex.r, 0, 0.5 * tex.g, 1 );
+
+
+    // out_color = vec4( tex.x, tex.y, 0, 1 );
     // out_color = vec4( v_position.x + 0.25, v_position.y + 0.25, tex.x, 1 );
     // out_color = vec4( v_position.x + 0.5, v_position.y + 0.5, 0, 1 );
 }
