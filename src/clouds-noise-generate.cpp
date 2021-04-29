@@ -58,6 +58,109 @@ float turbulence( std::vector<std::vector<float>>& noise, int dim, float x, floa
  *
  ***********************************************************************************/
 
+/**
+ * Generate Worley Noise
+ * Creates an nxn texture with c cells
+ * Each cell contains a single random points
+ *
+ * For each density pt, find its closest worley point
+ */
+void Clouds::generateWorleyNoise2DTexture( int cs, int pxs ) {
+  std::vector<std::vector<Vector2f>> wps( cs, std::vector<Vector2f>( cs, Vector2f() ) );
+  std::vector<std::vector<float>> dps( pxs, std::vector<float>( pxs, 0 ) );
+
+  // Generate random Vector2f
+  for ( int y = 0 ; y < cs ; y++ ) {
+    for ( int x = 0 ; x < cs ; x++ ) {
+      wps[y][x] = ( Vector2f::Random() + Vector2f( 1.f, 1.f ) ) / 2.f;
+    }
+  }
+
+  // check every density pt
+  float max_dist = std::numeric_limits<float>::min();
+  for ( int y = 0 ; y < pxs ; y++ ) {
+    for ( int x = 0 ; x < pxs ; x++ ) {
+      float cellsize = 1. / (float) cs;
+
+      // need to normalize the sizes
+      float normx = (x + 0.5) / (float) pxs; // [0, 1], center of px
+      float normy = (y + 0.5) / (float) pxs; // [0, 1], center of px
+
+      // Current cell
+      int cellx = normx * cs;
+      int celly = normy * cs;
+
+      // Position in cells
+      float posx = normx * cs;
+      float posy = normy * cs;
+
+      // Check every cell
+      float min_dist = std::numeric_limits<float>::max();
+      for ( int yy = 0 ; yy < cs ; yy++ ) {
+        for ( int xx = 0 ; xx < cs ; xx++ ) {
+
+          // Check this cell in every block position
+          for ( int offy = -1 ; offy < 2 ; offy++ ) {
+            for ( int offx = -1 ; offx < 2 ; offx++ ) {
+              float blockoffx = xx + offx * cs;
+              float blockoffy = yy + offy * cs;
+
+              Vector2f const& wp = wps[yy][xx];
+
+              float wp_posx = blockoffx + wp.x();
+              float wp_posy = blockoffy + wp.y();
+              
+              Vector2f pt = Vector2f( wp_posx, wp_posy );
+              float d = (Vector2f( posx, posy ) - pt).norm();
+
+              min_dist = d < min_dist ? d : min_dist;
+            }
+          }
+          
+        }
+      }
+
+      dps[y][x] = min_dist;
+      max_dist = min_dist > max_dist ? min_dist : max_dist;
+    }
+  }
+
+  std::vector<unsigned char> worley( pxs * pxs * 4, 0 );
+  for ( int y = 0 ; y < pxs ; y++ ) {
+    for ( int x = 0 ; x < pxs ; x++ ) {
+      float d = ( 1 - dps[y][x] / max_dist ) * 255;
+      worley[4 * pxs * y + 4 * x + 0] = d;
+      worley[4 * pxs * y + 4 * x + 1] = d;
+      worley[4 * pxs * y + 4 * x + 2] = d;
+      worley[4 * pxs * y + 4 * x + 3] = 255;
+    }
+  }
+
+  glActiveTexture( GL_TEXTURE0 + worley_noise_unit );
+  glBindTexture( GL_TEXTURE_2D, worley_noise_id );
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // load and generate the texture
+  glTexImage2D(
+      GL_TEXTURE_2D,
+      0,         // mipmap level ?
+      GL_RGBA,    // internal format
+      pxs, // width
+      pxs, // height
+      0,         // border
+      GL_RGBA,    // format
+      GL_UNSIGNED_BYTE,  // type
+      worley.data() );
+}
+
+/**
+ * Generate Cloudy noise
+ * Results in a nxn loaded at the perlin_noise_unit
+ */
 void Clouds::generatePerlinNoise2DTexture( int n ) {
   auto noise = generateNoise( n );
   std::vector<unsigned char> perlin( n * n * 4, 0 );
@@ -65,7 +168,6 @@ void Clouds::generatePerlinNoise2DTexture( int n ) {
   for ( int x = 0 ; x < n ; x++ ) {
     for ( int y = 0 ; y < n ; y++ ) {
       float t = turbulence( noise, n, x, y, 32 );
-      std::cout << "t: " << t << "\n";
       perlin[4 * n * y + 4 * x + 0] = t;
       perlin[4 * n * y + 4 * x + 1] = t;
       perlin[4 * n * y + 4 * x + 2] = t;

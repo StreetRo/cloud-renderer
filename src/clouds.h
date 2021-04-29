@@ -81,6 +81,7 @@ private:
   void generateBoundingBox();
   void generateDensityTexture();
   void generatePerlinNoise2DTexture( int dimension );
+  void generateWorleyNoise2DTexture( int worley_pt_cell_dim, int pixel_dim  );
 
   // File management
   std::string m_project_root;
@@ -129,6 +130,9 @@ private:
 
   GLuint perlin_noise_id;
   const GLuint perlin_noise_unit = 7;
+
+  GLuint worley_noise_id;
+  const GLuint worley_noise_unit = 8;
 
   /*
    * Bounding Box

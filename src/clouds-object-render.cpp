@@ -171,7 +171,8 @@ void Clouds::drawQuadSurface( GLShader &shader ) {
   tris.col( 4 ) = Vector3f( a.x , b.y , a.z ); // ur
   tris.col( 5 ) = Vector3f( b.x , b.y , a.z ); // ll
 
-  shader.setUniform( "u_perlin_noise", perlin_noise_unit, false );
+  // shader.setUniform( "u_perlin_noise", perlin_noise_unit, false );
+  shader.setUniform( "u_perlin_noise", worley_noise_unit, false );
 
   shader.setUniform( "u_color", nanogui::Color( 1.f, 0.f, 0.0f, 0.5 )  );
   shader.uploadAttrib( "in_position", tris );
