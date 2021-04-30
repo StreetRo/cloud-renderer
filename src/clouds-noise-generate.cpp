@@ -23,8 +23,8 @@ float smoothNoise(std::vector<std::vector<float>>& noise, int dim, float x, floa
    float fractY = y - int(y);
 
    //wrap around
-   int x1 = x;
-   int y1 = y;
+   int x1 = (int(x) + dim) % dim;
+   int y1 = (int(y) + dim) % dim;
 
    //neighbor values
    int x2 = (x1 + dim - 1) % dim;
@@ -36,7 +36,7 @@ float smoothNoise(std::vector<std::vector<float>>& noise, int dim, float x, floa
    value += (1 - fractX) * fractY     * noise[y1][x2];
    value += fractX     * (1 - fractY) * noise[y2][x1];
    value += (1 - fractX) * (1 - fractY) * noise[y2][x2];
-
+   std::cout << "Value: " << value << "\n";
    return value;
 }
 
