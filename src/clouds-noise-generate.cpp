@@ -7,10 +7,14 @@
 
 std::vector<std::vector<float>> generateNoise(int dim) {
   std::vector<std::vector<float>> noise( dim , std::vector<float>( dim, 0 ) );
-  for (int x = 0; x < dim; x++) {
-    for (int y = 0; y < dim; y++) {
-      float r = ( Vector2f::Random().x() + 1 ) / 2.f; // [0, 1]
-      noise[y][x] = r;
+  #pragma omp parallel
+  {
+    #pragma omp for
+    for (int x = 0; x < dim; x++) {
+      for (int y = 0; y < dim; y++) {
+        float r = ( Vector2f::Random().x() + 1 ) / 2.f; // [0, 1]
+        noise[y][x] = r;
+      }
     }
   }
 
