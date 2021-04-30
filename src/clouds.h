@@ -118,7 +118,7 @@ private:
   std::vector<unsigned char>* noise_packed = nullptr;
 
   int worley_cells   = 8;
-  int texture_pixels = 256;
+  int texture_pixels = 512;
 
   /*
    * Worley noise texture
@@ -161,8 +161,8 @@ private:
   float    cloud_scale     = 5;
   Vector3f cloud_offset    = Vector3f( 0, 0, 0 );
   int      density_samples = 100;
-  float    density_thresh  = 0.1;
-  float    density_mult    = 5;
+  float    density_thresh  = 5.5;
+  float    density_mult    = 2.5;
 
   // Default simulation values
   int frames_per_sec = 90;

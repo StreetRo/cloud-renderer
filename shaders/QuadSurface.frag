@@ -40,7 +40,7 @@ float sampleDensity( vec4 pos ) {
     float freq3 = texture( u_noise, 16 * ( xyz.xy + 0.5 ) ).g;
 
     // Fractional Brownion Motion to decay the higher freq noise
-    float shape_noise = tex.g * (2/3) + freq2 * (1/2) + freq3 * (1/4);
+    float shape_noise = tex.g * (0.625) + freq2 * (0.125) + freq3 * (0.0625);
     shape_noise = shape_noise - 1;
     shape_noise = scale( tex.r, shape_noise, 1, 0, 1 );
 
