@@ -1,8 +1,5 @@
 #version 330
 
-uniform vec4 u_color;
-uniform vec3 u_cam_pos;
-
 uniform vec3 u_light_pos;
 uniform vec3 u_light_intensity;
 
@@ -19,7 +16,8 @@ uniform float u_density_mult;
 uniform int u_density_samples;
 
 in vec4 v_position;
-in vec4 v_normal;
+in vec3 v_origin;
+in vec3 v_raydir;
 
 out vec4 out_color;
 
@@ -50,68 +48,62 @@ float sampleDensity( vec4 pos ) {
     return max( 0, shape_noise - u_density_thresh * 0.1 ) * u_density_mult;
 }
 
-void main() {
+vec3 intersect( vec3 boxmin, vec3 boxmax, vec3 o, vec3 d ) {
+  float tx1 = ( boxmin.x - o.x ) / d.x;
+  float tx2 = ( boxmax.x - o.x ) / d.x;
 
-    float d = sampleDensity( v_position );
+  // y-axis
+  float ty1 = ( boxmin.y - o.y ) / d.y;
+  float ty2 = ( boxmax.y - o.y ) / d.y;
 
-    out_color = vec4( 1, 1, 1, d );
+  // z-axis
+  float tz1 = ( boxmin.z - o.z ) / d.z;
+  float tz2 = ( boxmax.z - o.z ) / d.z;
 
-    // vec4 tex = texture( u_noise, ( v_position.xy + 0.5 ) );
-    // out_color = vec4( tex.r, 0, 0.5 * tex.g, 1 );
+  float txmin = min( tx1, tx2 );
+  float txmax = max( tx1, tx2 );
+  float tymin = min( ty1, ty2 );
+  float tymax = max( ty1, ty2 );
+  float tzmin = min( tz1, tz2 );
+  float tzmax = max( tz1, tz2 );
 
+  float tmin = max( max( txmin, tymin ), tzmin );
+  float tmax = min( min( txmax, tymax), tzmax );
 
-    // out_color = vec4( tex.x, tex.y, 0, 1 );
-    // out_color = vec4( v_position.x + 0.25, v_position.y + 0.25, tex.x, 1 );
-    // out_color = vec4( v_position.x + 0.5, v_position.y + 0.5, 0, 1 );
+  if ( tmin > tmax || tmax < 0 ) {
+    return vec3(-1, -1, -1); }
+
+  // FIXME: Setting these breaks importance sampling of dae/sky/CBbunny.dae
+  // t0 = tmin;
+  // t1 = tmax;
+
+  return vec3( tmin, tmax, 1 );
 }
 
+void main() {
+    vec3 o = v_origin;
+    vec3 d = v_raydir;
 
-// void main() {
-    // vec3 wo = normalize( u_cam_pos - vec3( 2. * v_position ) );
-    // vec2 distances = rayBoxDst( u_bbox_min, u_bbox_max, u_cam_pos, -wo );
-    // float d_to_box = distances.x;
-    // float d_in_box = distances.y;
+    vec3 dists = intersect( u_bbox_min, u_bbox_max, o, d );
+    if ( dists.z == 1 ) {
+      float d_to_box = dists.x;
+      float d_in_box = dists.y - dists.x;
 
-    // float d = 0.f;
-    // float d_travd = 0.f;
-    // int n = 0;
-    // float step_size = d_in_box / u_density_samples;
-    // while ( d_travd < d_in_box ) {
+      float val = 0.f;
+      float d_travd = 0.f;
+      int n = 0;
+      float step_size = d_in_box / u_density_samples;
+      while ( d_travd < d_in_box ) {
+          vec3 v = o + ( d_travd + d_to_box ) * d;
 
-        // vec3 v = u_cam_pos + ( d_travd + d_to_box ) * -wo;
+          val += sampleDensity( vec4( v, 1 ) ) * step_size;
 
-        // d += sampleDensity( v ) * step_size;
+          d_travd += step_size;
+          n += 1;
+      }
 
-        // d_travd += step_size;
-        // n += 1;
-    // }
-
-    // d = exp( -( d ) );
-    // out_color = vec4( d, d, d, d );
-// }
-
-
-/* reference: https://github.com/SebLague/Clouds/blob/master/Assets/Scripts/Clouds/Shaders/Clouds.shader */
-vec2 rayBoxDst(vec3 boundsMin, vec3 boundsMax, vec3 rayOrigin, vec3 invRaydir) {
-    // Adapted from: http://jcgt.org/published/0007/03/04/
-    vec3 t0 = (boundsMin - rayOrigin) * invRaydir;
-    vec3 t1 = (boundsMax - rayOrigin) * invRaydir;
-    vec3 tmin = min(t0, t1);
-    vec3 tmax = max(t0, t1);
-    
-    float dstA = max(max(tmin.x, tmin.y), tmin.z);
-    float dstB = min(tmax.x, min(tmax.y, tmax.z));
-
-    // CASE 1: ray intersects box from outside (0 <= dstA <= dstB)
-    // dstA is dst to nearest intersection, dstB dst to far intersection
-
-    // CASE 2: ray intersects box from inside (dstA < 0 < dstB)
-    // dstA is the dst to intersection behind the ray, dstB is dst to forward intersection
-
-    // CASE 3: ray misses box (dstA > dstB)
-
-    float dstToBox = max(0, dstA);
-    float dstInsideBox = max(0, dstB - dstToBox);
-    return vec2(dstToBox, dstInsideBox);
+      val = exp( -( 1 - val ) );
+      out_color = vec4( 1, 1, 1, val );
+    }
 }
 
