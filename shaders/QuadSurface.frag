@@ -19,7 +19,10 @@ uniform float u_density_mult;
 uniform int u_density_samples;
 
 in vec4 v_position;
-in vec4 v_normal;
+in vec3 v_origin;
+in vec3 v_raydir;
+in vec3 v_ray;
+in mat4 v_inv_viewprojection;
 
 out vec4 out_color;
 
@@ -50,11 +53,75 @@ float sampleDensity( vec4 pos ) {
     return max( 0, shape_noise - u_density_thresh * 0.1 ) * u_density_mult;
 }
 
+bool intersect( vec3 boxmin, vec3 boxmax, vec3 o, vec3 d ) {
+  float tx1 = ( boxmin.x - o.x ) / d.x;
+  float tx2 = ( boxmax.x - o.x ) / d.x;
+
+  // y-axis
+  float ty1 = ( boxmin.y - o.y ) / d.y;
+  float ty2 = ( boxmax.y - o.y ) / d.y;
+
+  // z-axis
+  float tz1 = ( boxmin.z - o.z ) / d.z;
+  float tz2 = ( boxmax.z - o.z ) / d.z;
+
+  float txmin = min( tx1, tx2 );
+  float txmax = max( tx1, tx2 );
+  float tymin = min( ty1, ty2 );
+  float tymax = max( ty1, ty2 );
+  float tzmin = min( tz1, tz2 );
+  float tzmax = max( tz1, tz2 );
+
+  float tmin = max( max( txmin, tymin ), tzmin );
+  float tmax = min( min( txmax, tymax), tzmax );
+
+  if ( tmin > tmax || tmax < 0 ) {
+    return false; }
+
+  // FIXME: Setting these breaks importance sampling of dae/sky/CBbunny.dae
+  // t0 = tmin;
+  // t1 = tmax;
+
+  return true;
+}
+
+
+
 void main() {
+    vec3 o = v_origin;
+    vec3 d = normalize( v_raydir );
 
-    float d = sampleDensity( v_position );
+    vec2 distances = rayBoxDst( u_bbox_max, u_bbox_min, o, -d );
+    float d_to_box = distances.x;
+    float d_in_box = distances.y;
 
-    out_color = vec4( 1, 1, 1, d );
+
+    // if ( d_in_box > 0  ) {
+    if ( intersect( u_bbox_min, u_bbox_max, o, d ) ) {
+        out_color = vec4( 0, 1, 0, 1 );
+    } else {
+        // out_color = vec4( d_to_box, d_in_box, 0, 1 );
+        // out_color = vec4( u_bbox_max, 1 );
+        // out_color = vec4( 1,1,1, 0.5 );
+        // out_color = vec4( v_position.xy, 0, 0.5 );
+
+        // o.y = -o.y;
+        // out_color = vec4( o / 10, 0.5 );
+        // out_color = vec4( -d, 0.5 );
+        out_color = vec4( 1, 1, 1, 0.5 );
+    }
+}
+
+
+
+
+
+
+// void main() {
+
+    // float d = sampleDensity( v_position );
+
+    // out_color = vec4( 1, 1, 1, d );
 
     // vec4 tex = texture( u_noise, ( v_position.xy + 0.5 ) );
     // out_color = vec4( tex.r, 0, 0.5 * tex.g, 1 );
@@ -63,7 +130,7 @@ void main() {
     // out_color = vec4( tex.x, tex.y, 0, 1 );
     // out_color = vec4( v_position.x + 0.25, v_position.y + 0.25, tex.x, 1 );
     // out_color = vec4( v_position.x + 0.5, v_position.y + 0.5, 0, 1 );
-}
+// }
 
 
 // void main() {

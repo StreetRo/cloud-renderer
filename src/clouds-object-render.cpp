@@ -107,7 +107,7 @@ void Clouds::drawContents() {
     shader.setUniform("u_model", model);
     shader.setUniform("u_view_projection", viewProjection);
 
-    // drawBoundingBoxLines( shader );
+    drawBoundingBoxLines( shader );
   }
 
   /* Draw Bounding Box Surface */
@@ -148,17 +148,25 @@ void Clouds::drawContents() {
     shader.bind();
 
     // Prepare the camera projection matrix
+    shader.setUniform("u_cam_pos", Vector3f(cam_pos.x, cam_pos.y, cam_pos.z));
     shader.setUniform("u_model", model);
+    shader.setUniform("u_view", view);
+    shader.setUniform("u_inv_view", (Matrix4f) view.inverse());
+    shader.setUniform("u_inv_projection", (Matrix4f) projection.inverse());
+    shader.setUniform("u_inv_viewprojection", (Matrix4f) (projection * view).inverse());
+    shader.setUniform("u_inv_projectionview", (Matrix4f) (view * projection).inverse());
     shader.setUniform("u_projection", projection);
-    // shader.setUniform("u_view_projection", viewProjection);
+    shader.setUniform("u_near", 1);
+    shader.setUniform("u_far", 1000);
+    shader.setUniform("u_view_projection", viewProjection);
 
     drawQuadSurface( shader );
   }
 }
 
 void Clouds::drawQuadSurface( GLShader &shader ) {
-  Vector3D a = Vector3D( -0.5, 0.5, -1 ); // top left
-  Vector3D b = Vector3D(  0.5, -0.5, -1 ); // bottom right
+  Vector3D a = Vector3D( -1, 1, -1 ); // top left
+  Vector3D b = Vector3D(  1, -1, -1 ); // bottom right
 
   // This can be sped up by not recreating it every time
   MatrixXf tris = MatrixXf(3, 6);
@@ -178,6 +186,9 @@ void Clouds::drawQuadSurface( GLShader &shader ) {
   shader.setUniform( "u_density_thresh", density_thresh );
   shader.setUniform( "u_density_mult", density_mult );
   shader.setUniform( "u_density_samples", density_samples );
+
+  shader.setUniform( "u_bbox_min", bbox_min );
+  shader.setUniform( "u_bbox_max", bbox_max );
 
   shader.setUniform( "u_color", nanogui::Color( 1.f, 0.f, 0.0f, 0.5 )  );
   shader.uploadAttrib( "in_position", tris );
