@@ -458,7 +458,6 @@ void Clouds::initGUI(Screen *screen) {
     fb1->setFixedSize(Vector2i(100, 20));
     fb1->setFontSize(14);
     fb1->setValue( lt_abs_sun );
-    fb1->setMinValue( 0 );
     // fb1->setUnits("amount");
     fb1->setSpinnable(true);
     fb1->setCallback([this](int value) { lt_abs_sun = value; });
@@ -470,7 +469,6 @@ void Clouds::initGUI(Screen *screen) {
     fb2->setFixedSize(Vector2i(100, 20));
     fb2->setFontSize(14);
     fb2->setValue( lt_abs_cloud );
-    fb2->setMinValue( 0 );
     // fb2->setUnits("amount");
     fb2->setSpinnable(true);
     fb2->setCallback([this](int value) { lt_abs_cloud = value; });
@@ -482,7 +480,6 @@ void Clouds::initGUI(Screen *screen) {
     fb3->setFixedSize(Vector2i(100, 20));
     fb3->setFontSize(14);
     fb3->setValue( lt_darkness );
-    fb3->setMinValue( 0 );
     // fb3->setUnits("amount");
     fb3->setSpinnable(true);
     fb3->setCallback([this](int value) { lt_darkness = value; });

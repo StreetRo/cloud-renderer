@@ -104,8 +104,8 @@ float lightmarch( vec3 pos ) {
       totalDensity += max(0, sampleDensity(vec4( pos, 1 )) * step_size);
   }
 
-  float transmittance = exp(-totalDensity /* * lightAdsorptionTowardsSun */);
-  return /* darknessThreshold + */ transmittance /* * (1-darknessThreshold) */;
+  float transmittance = exp(-totalDensity * u_lt_abs_sun);
+  return u_lt_darkness + transmittance * (1. - u_lt_darkness * 0.001);
 }
 
 void main() {
@@ -149,7 +149,7 @@ void main() {
               float lightTransmittance = lightmarch(v);
 
               lightEnergy += val * step_size * transmittance * lightTransmittance /* * phaseVal */;
-              transmittance *= exp(-val * step_size /* * lightAdsorptionThroughCloud */);
+              transmittance *= exp(-val * step_size * u_lt_abs_cloud);
               if (transmittance < 0.01) { break ; }
           }
           d_travd += step_size;
@@ -158,12 +158,16 @@ void main() {
       val = exp( -( 1 - val ) );
 
       /* Final out color mixing:
-       * float3 backgroundCol = tex2D(_MainTex,i.uv);
-       * float3 cloudCol = lightEnergy * _LightColor0;
-       * float3 col = backgroundCol * transmittance + cloudCol;
+       * vec3 backgroundCol = tex2D(_MainTex,i.uv);
+       * vec3 cloudCol = lightEnergy * _LightColor0;
+       * vec3 col = backgroundCol * transmittance + cloudCol;
        * return float4(col,0); */
 
-      out_color = vec4( 0, 0, 0, val - test_light * 0.5);
+      vec3 cloudCol = lightEnergy * vec3( 1, 1, 1 );
+      vec3 col = vec3( 0.39, 0.74, 0.99 ) * transmittance + cloudCol;
+
+      out_color = vec4( col, 1 );
+      // out_color = vec4( 0, 0, 0, val - test_light * 0.5);
     }
     /* z-coordinate is -1 therefore we have no
      * ray-box intersection and so we do not draw

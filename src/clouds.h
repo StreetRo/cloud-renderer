@@ -110,11 +110,11 @@ private:
   /*
    * Lighting
    */
-  Vector3f pt_light_pos = Vector3f( 0, 2, -2 );
+  Vector3f pt_light_pos = Vector3f( 0, 100, -10 );
 
-  float lt_abs_sun = 1.f;
-  float lt_abs_cloud = 1.f;
-  float lt_darkness = 1.f;
+  float lt_abs_sun = 50.f;
+  float lt_abs_cloud = 15.f;
+  float lt_darkness = 8.f;
 
   /*
    * Packed Noise
@@ -156,7 +156,7 @@ private:
   MatrixXf bbox_pts  = MatrixXf( 3, 24 );
   MatrixXf bbox_tris = MatrixXf( 3, 36 );
   Vector3f bbox_min  = Vector3f( 0.f, 0.f, 0.f );
-  Vector3f bbox_max  = Vector3f( 10.f, 10.f, 1.f );
+  Vector3f bbox_max  = Vector3f( 10.f, 5.f, 10.f );
   const GLuint density_tex_unit = 6;
   
   /*
