@@ -14,8 +14,12 @@ uniform vec3 u_cloud_offset;
 uniform float u_density_thresh;
 uniform float u_density_mult;
 uniform int u_density_samples;
-//uniform float u_lightAbsorptionTowardSun;
-//uniform float u_lightAbsorptionThroughCloud;
+
+/* Light settings to add:
+ * float lightAbsorptionTowardSun;
+ * float lightAbsorptionThroughCloud;
+ * float darknessThreshold;
+*/
 
 in vec4 v_position;
 in vec3 v_origin;
@@ -91,11 +95,11 @@ float lightmarch( vec3 pos ) {
 
   for (int step = 0; step < u_density_samples; step++) {
       pos += dirToLight * step_size;
-      totalDensity += max(0, sampleDensity(vec4( pos, 1 )));
+      totalDensity += max(0, sampleDensity(vec4( pos, 1 )) * step_size);
   }
 
-  float transmittance = exp(-(1-totalDensity));
-  return transmittance;
+  float transmittance = exp(-totalDensity /* * lightAdsorptionTowardsSun */);
+  return /* darknessThreshold + */ transmittance /* * (1-darknessThreshold) */;
 }
 
 void main() {
@@ -140,18 +144,22 @@ void main() {
            * adding up the light for given ray */
           if (val > 0) {
               float lightTransmittance = lightmarch(v);
-              test_light += 1 / lightTransmittance;
 
-              /* This is original code:
-              lightEnergy += val * step_size * transmittance * lightTransmittance * 0.001;
-              transmittance *= exp(-val * step_size * 0.01);
+              lightEnergy += val * step_size * transmittance * lightTransmittance /* * phaseVal */;
+              transmittance *= exp(-val * step_size /* * lightAdsorptionThroughCloud */);
               if (transmittance < 0.01) { break ; }
-              */
           }
           d_travd += step_size;
       }
 
       val = exp( -( 1 - val ) );
+
+      /* Final out color mixing:
+       * float3 backgroundCol = tex2D(_MainTex,i.uv);
+       * float3 cloudCol = lightEnergy * _LightColor0;
+       * float3 col = backgroundCol * transmittance + cloudCol;
+       * return float4(col,0); */
+
       out_color = vec4( 0, 0, 0, val - test_light * 0.5);
     }
     /* z-coordinate is -1 therefore we have no
