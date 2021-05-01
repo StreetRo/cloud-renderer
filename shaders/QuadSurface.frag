@@ -9,17 +9,22 @@ uniform sampler2D u_noise;
 uniform vec3 u_bbox_min;
 uniform vec3 u_bbox_max;
 
+/*
+ * Cloud Parameters
+ */
 uniform float u_cloud_scale;
 uniform vec3 u_cloud_offset;
 uniform float u_density_thresh;
 uniform float u_density_mult;
 uniform int u_density_samples;
 
-/* Light settings to add:
- * float lightAbsorptionTowardSun;
- * float lightAbsorptionThroughCloud;
- * float darknessThreshold;
-*/
+
+/*
+ * Light Parameters
+ */
+uniform float u_lt_abs_sun;
+uniform float u_lt_abs_cloud;
+uniform float u_lt_darkness;
 
 in vec4 v_position;
 in vec3 v_origin;
@@ -27,8 +32,9 @@ in vec3 v_raydir;
 
 out vec4 out_color;
 
-vec2 rayBoxDst(vec3 boundsMin, vec3 boundsMax, vec3 rayOrigin, vec3 invRaydir);
-
+/*
+ * Scale a value v which was between lo and ho to be ln and hn
+ */
 float scale( float v, float lo, float ho, float ln, float hn ) {
     return ln + ( (v - lo) * (hn - ln) ) / (ho - lo);
 }
@@ -112,9 +118,6 @@ void main() {
      * "1" is placed in z-coordinate to indicate
      * a hit! */
     vec3 dists = intersect( u_bbox_min, u_bbox_max, o, d );
-
-    /* This is to test if the pt_light_pos is set correctly */
-    //if (u_light_pos.xyz == vec3(0, 2, 2)) { out_color = vec4(0, 1, 1, 1); }
 
     /* z-coordinate is 1 therefore we have a positive
      * ray-box-intersecion --> let's draw on the quad */
