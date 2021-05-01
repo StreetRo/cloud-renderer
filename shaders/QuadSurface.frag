@@ -4,7 +4,7 @@ uniform vec3 u_light_pos;
 uniform vec3 u_light_intensity;
 
 uniform sampler3D u_density_tex;
-uniform sampler2D u_noise;
+uniform sampler3D u_noise;
 
 uniform vec3 u_bbox_min;
 uniform vec3 u_bbox_max;
@@ -46,18 +46,18 @@ float sampleDensity( vec4 pos ) {
     // vec3 xyz = pos.xyz;
     // vec3 xyz = pos.xyz + u_cloud_offset * 0.1;
     vec3 xyz = pos.xyz * u_cloud_scale * 0.1 + u_cloud_offset * 0.1;
-    vec4 tex = texture( u_noise, ( xyz.xy + 0.5 ) );
+    vec4 tex = texture( u_noise, ( xyz.xyz + 0.5 ) );
 
     // Generate higher frequency worley using same texture
-    float freq2 = texture( u_noise, 4 * ( xyz.xy + 0.5 ) ).g;
-    float freq3 = texture( u_noise, 16 * ( xyz.xy + 0.5 ) ).g;
+    float freq2 = texture( u_noise, 4 * ( xyz.xyz + 0.5 ) ).g;
+    float freq3 = texture( u_noise, 16 * ( xyz.xyz + 0.5 ) ).g;
 
     // Fractional Brownion Motion to decay the higher freq noise
     float shape_noise = tex.g * (0.625) + freq2 * (0.125) + freq3 * (0.0625);
     shape_noise = shape_noise - 1;
     shape_noise = scale( tex.r, shape_noise, 1, 0, 1 );
 
-    return max( 0, shape_noise - u_density_thresh * 0.1 ) * u_density_mult;
+    return max( 0, shape_noise - u_density_thresh * 0.1 ) * u_density_mult * 0.1;
 }
 
 /* Check for ray-box intersecation returning:

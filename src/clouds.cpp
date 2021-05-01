@@ -214,13 +214,15 @@ void Clouds::init() {
   generateBoundingBox();
   generatePoints();
 
-  noise_packed = new std::vector<unsigned char>( texture_pixels * texture_pixels * 4, 0 );
-  generatePerlinNoise2DTexture( texture_pixels );
-  generateWorleyNoise2DTexture( worley_cells, texture_pixels );
+  noise_packed = new std::vector<unsigned char>( texture_pixels * texture_pixels * texture_pixels * 4, 0 );
+  std::cout << "Generating Perlin Noise...\n";
+  generatePerlinNoise3DTexture( texture_pixels );
+  std::cout << "Generating Worley Noise...\n";
+  generateWorleyNoise3DTexture( worley_cells, texture_pixels );
   loadPackedNoiseTexture();
 
   // Must come after generating density values
-  generateDensityTexture();
+  // generateDensityTexture();
 }
 
 bool Clouds::isAlive() { return is_alive; }

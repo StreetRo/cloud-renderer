@@ -81,7 +81,7 @@ private:
   void generateDensityValues(int numberOfCells);
   void generateBoundingBox();
   void generateDensityTexture();
-  void generatePerlinNoise2DTexture( int dimension );
+  void generatePerlinNoise3DTexture( int dimension );
   void generateWorleyNoise2DTexture( int worley_pt_cell_dim, int pixel_dim  );
   void loadPackedNoiseTexture();
 
