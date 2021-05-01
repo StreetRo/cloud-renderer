@@ -229,7 +229,7 @@ void Clouds::update( double dt ) { }
 
 void Clouds::updateGUI( double avgFPS ) {
   // Update GUI
-  fps_box->setValue( std::ceil( avgFPS ) );
+  // fps_box->setValue( std::ceil( avgFPS ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -413,14 +413,9 @@ void Clouds::initGUI(Screen *screen) {
   window->setPosition(Vector2i( 15, 15 ));
   window->setLayout(new GroupLayout(15, 6, 14, 5));
 
+  /*
   new Label(window, "Buttons", "sans-bold");
   {
-    Button *b = new Button(window, "Button 1");
-    b->setFlags(Button::ToggleButton);
-    b->setPushed( button1 );
-    b->setFontSize(14);
-    b->setChangeCallback( [this](bool state) {  } );
-
     Button *b1 = new Button(window, "Bounding Points");
     b1->setFlags(Button::ToggleButton);
     b1->setPushed( enableBoundingPointsDraw );
@@ -445,6 +440,54 @@ void Clouds::initGUI(Screen *screen) {
     b4->setFontSize(14);
     b4->setChangeCallback( [this](bool state) { enableLinesDraw = state; } );
   }
+  */
+
+  new Label(window, "Light Properties", "sans-bold");
+  {
+    Widget *panel = new Widget(window);
+    GridLayout *layout =
+        new GridLayout(Orientation::Horizontal, 2, Alignment::Middle, 5, 5);
+    layout->setColAlignment({Alignment::Maximum, Alignment::Fill});
+    layout->setSpacing(0, 10);
+    panel->setLayout(layout);
+
+    new Label(panel, "Absorption (Sun) :", "sans-bold");
+
+    auto fb1 = new FloatBox<float>(panel);
+    fb1->setEditable(true);
+    fb1->setFixedSize(Vector2i(100, 20));
+    fb1->setFontSize(14);
+    fb1->setValue( lt_abs_sun );
+    fb1->setMinValue( 0 );
+    // fb1->setUnits("amount");
+    fb1->setSpinnable(true);
+    fb1->setCallback([this](int value) { lt_abs_sun = value; });
+
+    new Label(panel, "Absorption (Cloud) :", "sans-bold");
+
+    auto fb2 = new FloatBox<float>(panel);
+    fb2->setEditable(true);
+    fb2->setFixedSize(Vector2i(100, 20));
+    fb2->setFontSize(14);
+    fb2->setValue( lt_abs_cloud );
+    fb2->setMinValue( 0 );
+    // fb2->setUnits("amount");
+    fb2->setSpinnable(true);
+    fb2->setCallback([this](int value) { lt_abs_cloud = value; });
+
+    new Label(panel, "Darkness :", "sans-bold");
+
+    auto fb3 = new FloatBox<float>(panel);
+    fb3->setEditable(true);
+    fb3->setFixedSize(Vector2i(100, 20));
+    fb3->setFontSize(14);
+    fb3->setValue( lt_darkness );
+    fb3->setMinValue( 0 );
+    // fb3->setUnits("amount");
+    fb3->setSpinnable(true);
+    fb3->setCallback([this](int value) { lt_darkness = value; });
+  }
+
 
   new Label(window, "Parameters", "sans-bold");
   {
@@ -454,17 +497,6 @@ void Clouds::initGUI(Screen *screen) {
     layout->setColAlignment({Alignment::Maximum, Alignment::Fill});
     layout->setSpacing(0, 10);
     panel->setLayout(layout);
-
-    new Label(panel, "param 1 :", "sans-bold");
-
-    FloatBox<double> *fb = new FloatBox<double>(panel);
-    fb->setEditable(true);
-    fb->setFixedSize(Vector2i(100, 20));
-    fb->setFontSize(14);
-    fb->setValue( param1 );
-    fb->setUnits("units");
-    fb->setSpinnable(true);
-    fb->setCallback([this](float value) {  });
 
     new Label(panel, "num boxes :", "sans-bold");
 
@@ -654,6 +686,7 @@ void Clouds::initGUI(Screen *screen) {
     });
   }
 
+  /*
   new Label(window, "Sliders", "sans-bold");
   {
     Widget *panel = new Widget(window);
@@ -697,4 +730,5 @@ void Clouds::initGUI(Screen *screen) {
     fps_box->setUnits("fps");
     fps_box->setSpinnable(false);
   }
+  */
 }
