@@ -20,7 +20,6 @@ uniform int u_density_samples;
 in vec4 v_position;
 in vec3 v_origin;
 in vec3 v_raydir;
-in vec4 v_pt_light_pos;
 
 out vec4 out_color;
 
@@ -84,7 +83,7 @@ vec3 intersect( vec3 boxmin, vec3 boxmax, vec3 o, vec3 d ) {
 /* Calculate how much light reaches
  * current position */
 float lightmarch( vec3 pos ) {
-  vec3 dirToLight = normalize(vec3(v_pt_light_pos) - pos);                  // Vector pointing from Ray to Light Source
+  vec3 dirToLight = normalize(vec3(u_light_pos) - pos);                  // Vector pointing from Ray to Light Source
   float distInBox = intersect( u_bbox_min, u_bbox_max, pos, dirToLight ).y; // Distance from point to edge of the box pointing towards the sun
 
   float step_size = distInBox / u_density_samples;
@@ -111,7 +110,7 @@ void main() {
     vec3 dists = intersect( u_bbox_min, u_bbox_max, o, d );
 
     /* This is to test if the pt_light_pos is set correctly */
-    //if (v_pt_light_pos.xyz == vec3(0, 2, 2)) { out_color = vec4(0, 1, 1, 1); }
+    //if (u_light_pos.xyz == vec3(0, 2, 2)) { out_color = vec4(0, 1, 1, 1); }
 
     /* z-coordinate is 1 therefore we have a positive
      * ray-box-intersecion --> let's draw on the quad */

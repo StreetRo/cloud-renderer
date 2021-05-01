@@ -178,6 +178,8 @@ void Clouds::drawQuadSurface( GLShader &shader ) {
   shader.setUniform( "u_density_mult", density_mult );
   shader.setUniform( "u_density_samples", density_samples );
 
+  shader.setUniform( "u_light_pos", pt_light_pos );
+
   shader.setUniform( "u_bbox_min", bbox_min );
   shader.setUniform( "u_bbox_max", bbox_max );
 

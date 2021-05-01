@@ -4,6 +4,7 @@
 // execution. They are also read-only to enable parallelization.
 uniform vec3 u_cam_pos;
 uniform mat4 u_inv_projectionview;
+uniform vec3 u_light_pos;
 
 in vec4 in_position;
 //in vec4 in_pt_light_pos;
@@ -11,15 +12,8 @@ in vec4 in_position;
 out vec4 v_position;
 out vec3 v_origin;
 out vec3 v_raydir;
-out vec4 v_pt_light_pos;
 
 void main() {
-
-  /* Could not pass in the point light
-   * position correctly. Have to just set it
-   * like this for now */
-  v_pt_light_pos = vec4(0, 2, 2, -1);
-
   v_position = vec4( in_position.xy, 0, 1 );
   gl_Position = vec4( in_position.xy, 0, 1 );
   v_raydir = normalize( (u_inv_projectionview * vec4( in_position.xy, 1, 1 )).xyz );

@@ -110,7 +110,7 @@ private:
   /*
    * Lighting
    */
-  Vector4f pt_light_pos = Vector4f( 0, 2, -2, 1 );
+  Vector3f pt_light_pos = Vector3f( 0, 2, -2 );
 
   /*
    * Packed Noise
@@ -118,7 +118,7 @@ private:
   std::vector<unsigned char>* noise_packed = nullptr;
 
   int worley_cells   = 8;
-  int texture_pixels = 512;
+  int texture_pixels = 128;
 
   /*
    * Worley noise texture
@@ -160,7 +160,7 @@ private:
    */
   float    cloud_scale     = 5;
   Vector3f cloud_offset    = Vector3f( 0, 0, 0 );
-  int      density_samples = 100;
+  int      density_samples = 10;
   float    density_thresh  = 6.2;
   float    density_mult    = 2.2;
 
