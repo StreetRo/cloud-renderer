@@ -14,10 +14,13 @@ uniform vec3 u_cloud_offset;
 uniform float u_density_thresh;
 uniform float u_density_mult;
 uniform int u_density_samples;
+//uniform float u_lightAbsorptionTowardSun;
+//uniform float u_lightAbsorptionThroughCloud;
 
 in vec4 v_position;
 in vec3 v_origin;
 in vec3 v_raydir;
+in vec4 v_pt_light_pos;
 
 out vec4 out_color;
 
@@ -27,6 +30,9 @@ float scale( float v, float lo, float ho, float ln, float hn ) {
     return ln + ( (v - lo) * (hn - ln) ) / (ho - lo);
 }
 
+/* Sample provided textures and return a single
+ * float number representing a shade of a pixel
+ * on the quad at current position */
 float sampleDensity( vec4 pos ) {
     // vec3 xyz = pos.xyz;
     // vec3 xyz = pos.xyz + u_cloud_offset * 0.1;
@@ -42,12 +48,12 @@ float sampleDensity( vec4 pos ) {
     shape_noise = shape_noise - 1;
     shape_noise = scale( tex.r, shape_noise, 1, 0, 1 );
 
-    // return shape_noise;
-    // return freq3;
-    // return 1 - d;
     return max( 0, shape_noise - u_density_thresh * 0.1 ) * u_density_mult;
 }
 
+/* Check for ray-box intersecation returning:
+ * (-1, -1, -1)                     if no intersection
+ * (time_of_entry, time_of_exit, 1) if intersection */
 vec3 intersect( vec3 boxmin, vec3 boxmax, vec3 o, vec3 d ) {
   float tx1 = ( boxmin.x - o.x ) / d.x;
   float tx2 = ( boxmax.x - o.x ) / d.x;
@@ -70,40 +76,87 @@ vec3 intersect( vec3 boxmin, vec3 boxmax, vec3 o, vec3 d ) {
   float tmin = max( max( txmin, tymin ), tzmin );
   float tmax = min( min( txmax, tymax), tzmax );
 
-  if ( tmin > tmax || tmax < 0 ) {
-    return vec3(-1, -1, -1); }
-
-  // FIXME: Setting these breaks importance sampling of dae/sky/CBbunny.dae
-  // t0 = tmin;
-  // t1 = tmax;
+  if ( tmin > tmax || tmax < 0 ) { return vec3(-1, -1, -1); }
 
   return vec3( tmin, tmax, 1 );
+}
+
+/* Calculate how much light reaches
+ * current position */
+float lightmarch( vec3 pos ) {
+  vec3 dirToLight = normalize(vec3(v_pt_light_pos) - pos);                  // Vector pointing from Ray to Light Source
+  float distInBox = intersect( u_bbox_min, u_bbox_max, pos, dirToLight ).y; // Distance from point to edge of the box pointing towards the sun
+
+  float step_size = distInBox / u_density_samples;
+  float totalDensity = 0;
+
+  for (int step = 0; step < u_density_samples; step++) {
+      pos += dirToLight * step_size;
+      totalDensity += max(0, sampleDensity(vec4( pos, 1 )));
+  }
+
+  float transmittance = exp(-(1-totalDensity));
+  return transmittance;
 }
 
 void main() {
     vec3 o = v_origin;
     vec3 d = v_raydir;
 
+    /* Check for ray-box intersection
+     * returning distance to the box,
+     * distance traveled in the box, and
+     * "1" is placed in z-coordinate to indicate
+     * a hit! */
     vec3 dists = intersect( u_bbox_min, u_bbox_max, o, d );
+
+    /* This is to test if the pt_light_pos is set correctly */
+    //if (v_pt_light_pos.xyz == vec3(0, 2, 2)) { out_color = vec4(0, 1, 1, 1); }
+
+    /* z-coordinate is 1 therefore we have a positive
+     * ray-box-intersecion --> let's draw on the quad */
     if ( dists.z == 1 ) {
       float d_to_box = dists.x;
       float d_in_box = dists.y - dists.x;
 
       float val = 0.f;
       float d_travd = 0.f;
-      int n = 0;
       float step_size = d_in_box / u_density_samples;
+
+      // Light marching variables:
+      float transmittance = 1;
+      float lightEnergy = 0;
+      float test_light = 0;
+
+      /* Step through the box sampling the density
+       * and accumulating the result for output to
+       * screen */
+      vec3 test_pos = o + (d_travd + d_to_box) * d;
       while ( d_travd < d_in_box ) {
           vec3 v = o + ( d_travd + d_to_box ) * d;
-
           val += sampleDensity( vec4( v, 1 ) ) * step_size;
 
+          /* If density is larger than 0:
+           * We will lightmarch through the cloud
+           * adding up the light for given ray */
+          if (val > 0) {
+              float lightTransmittance = lightmarch(v);
+              test_light += 1 / lightTransmittance;
+
+              /* This is original code:
+              lightEnergy += val * step_size * transmittance * lightTransmittance * 0.001;
+              transmittance *= exp(-val * step_size * 0.01);
+              if (transmittance < 0.01) { break ; }
+              */
+          }
           d_travd += step_size;
-          n += 1;
       }
 
       val = exp( -( 1 - val ) );
-      out_color = vec4( 1, 1, 1, val );
+      out_color = vec4( 0, 0, 0, val - test_light * 0.5);
     }
+    /* z-coordinate is -1 therefore we have no
+     * ray-box intersection and so we do not draw
+     * anything to the screen! */
 }
 

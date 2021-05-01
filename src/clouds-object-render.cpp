@@ -93,7 +93,7 @@ void Clouds::drawContents() {
     shader.setUniform("u_model", model);
     shader.setUniform("u_view_projection", viewProjection);
 
-    // drawPointLight( shader );
+    drawPointLight( shader );
   }
 
   /* Draw Bounding Box Lines */
@@ -181,6 +181,7 @@ void Clouds::drawQuadSurface( GLShader &shader ) {
   shader.setUniform( "u_bbox_min", bbox_min );
   shader.setUniform( "u_bbox_max", bbox_max );
 
+  //shader.uploadAttrib( "in_pt_light_pos", pt_light_pos ); // can not get this to work
   shader.uploadAttrib( "in_position", tris );
   shader.drawArray( GL_TRIANGLES, 0, tris.cols() );
 }
