@@ -82,7 +82,7 @@ private:
   void generateBoundingBox();
   void generateDensityTexture();
   void generatePerlinNoise3DTexture( int dimension );
-  void generateWorleyNoise2DTexture( int worley_pt_cell_dim, int pixel_dim  );
+  void generateWorleyNoise3DTexture( int worley_pt_cell_dim, int pixel_dim  );
   void loadPackedNoiseTexture();
 
   // File management
