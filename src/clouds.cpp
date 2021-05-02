@@ -460,7 +460,6 @@ void Clouds::initGUI(Screen *screen) {
     fb1->setFixedSize(Vector2i(100, 20));
     fb1->setFontSize(14);
     fb1->setValue( lt_abs_sun );
-    // fb1->setUnits("amount");
     fb1->setSpinnable(true);
     fb1->setCallback([this](int value) { lt_abs_sun = value; });
 
@@ -471,7 +470,6 @@ void Clouds::initGUI(Screen *screen) {
     fb2->setFixedSize(Vector2i(100, 20));
     fb2->setFontSize(14);
     fb2->setValue( lt_abs_cloud );
-    // fb2->setUnits("amount");
     fb2->setSpinnable(true);
     fb2->setCallback([this](int value) { lt_abs_cloud = value; });
 
@@ -482,9 +480,38 @@ void Clouds::initGUI(Screen *screen) {
     fb3->setFixedSize(Vector2i(100, 20));
     fb3->setFontSize(14);
     fb3->setValue( lt_darkness );
-    // fb3->setUnits("amount");
     fb3->setSpinnable(true);
     fb3->setCallback([this](int value) { lt_darkness = value; });
+
+    new Label(panel, "pos x :", "sans-bold");
+
+    auto fb4 = new FloatBox<float>(panel);
+    fb4->setEditable(true);
+    fb4->setFixedSize(Vector2i(100, 20));
+    fb4->setFontSize(14);
+    fb4->setValue( pt_light_pos.x() );
+    fb4->setSpinnable(true);
+    fb4->setCallback([this](int value) { pt_light_pos.x() = value; });
+
+    new Label(panel, "pos y :", "sans-bold");
+
+    auto fb5 = new FloatBox<float>(panel);
+    fb5->setEditable(true);
+    fb5->setFixedSize(Vector2i(100, 20));
+    fb5->setFontSize(14);
+    fb5->setValue( pt_light_pos.y() );
+    fb5->setSpinnable(true);
+    fb5->setCallback([this](int value) { pt_light_pos.y() = value; });
+
+    new Label(panel, "pos z :", "sans-bold");
+
+    auto fb6 = new FloatBox<float>(panel);
+    fb6->setEditable(true);
+    fb6->setFixedSize(Vector2i(100, 20));
+    fb6->setFontSize(14);
+    fb6->setValue( pt_light_pos.z() );
+    fb6->setSpinnable(true);
+    fb6->setCallback([this](int value) { pt_light_pos.z() = value; });
   }
 
 

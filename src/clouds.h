@@ -123,7 +123,7 @@ private:
   std::vector<unsigned char>* noise_packed = nullptr;
 
   int worley_cells   = 8;
-  int texture_pixels = 128;
+  int texture_pixels = 16;
 
   /*
    * Worley noise texture
@@ -141,6 +141,7 @@ private:
    * Density texture
    */
   GLuint density_tex_id;
+  const GLuint density_tex_unit = 6;
 
   GLuint perlin_noise_id;
   const GLuint perlin_noise_unit = 7;
@@ -158,12 +159,11 @@ private:
   MatrixXf bbox_tris = MatrixXf( 3, 36 );
   Vector3f bbox_min  = Vector3f( 0.f, 0.f, 0.f );
   Vector3f bbox_max  = Vector3f( 10.f, 5.f, 10.f );
-  const GLuint density_tex_unit = 6;
   
   /*
    * Cloud Parameters
    */
-  float    cloud_scale     = 5;
+  float    cloud_scale     = 1;
   Vector3f cloud_offset    = Vector3f( 0, 0, 0 );
   int      density_samples = 10;
   float    density_thresh  = 6.2;

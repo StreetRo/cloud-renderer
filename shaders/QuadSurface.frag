@@ -170,7 +170,9 @@ void main() {
           if (val > 0) {
               float light_transmittance = lightmarch(v);
 
-              lightEnergy += val * step_size * transmittance * light_transmittance * phase_val;
+              phase_val = clamp( phase_val , 0.1, 10 );
+
+              lightEnergy += val * step_size * transmittance * light_transmittance * ( 1 - phase_val );
               transmittance *= exp(-val * step_size * u_lt_abs_cloud);
               if (transmittance < 0.01) { break ; }
           }
