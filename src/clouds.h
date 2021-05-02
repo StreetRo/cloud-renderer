@@ -115,6 +115,7 @@ private:
   float lt_abs_sun = 50.f;
   float lt_abs_cloud = 15.f;
   float lt_darkness = 8.f;
+  Vector4f lt_phase = Vector4f(1.5, 1.5, 1.5, 1.5);
 
   /*
    * Packed Noise

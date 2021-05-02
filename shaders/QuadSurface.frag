@@ -25,6 +25,7 @@ uniform int u_density_samples;
 uniform float u_lt_abs_sun;
 uniform float u_lt_abs_cloud;
 uniform float u_lt_darkness;
+uniform vec4  u_lt_phase;
 
 in vec4 v_position;
 in vec3 v_origin;
@@ -37,6 +38,22 @@ out vec4 out_color;
  */
 float scale( float v, float lo, float ho, float ln, float hn ) {
     return ln + ( (v - lo) * (hn - ln) ) / (ho - lo);
+}
+
+/* Henyey-Greenstein helper function for
+ * phase() function below */
+float hg(float a, float g) {
+    float g2 = g*g;
+    return ( 1-g2 ) / ( 4 * 3.1415 * pow( 1 + g2 - 2 * g * a, 1.5) );
+}
+
+/* This function provides us with a proper rotation
+ * towards the sun which will make clouds
+ * appear brighter closer to the sun */
+float phase( float a ) {
+    float blend = .5;
+    float hgBlend = hg( a, u_lt_phase.x ) * ( 1 - blend ) + hg( a, -u_lt_phase.y ) * blend;
+    return u_lt_phase.z + hgBlend * u_lt_phase.w;
 }
 
 /* Sample provided textures and return a single
@@ -93,7 +110,7 @@ vec3 intersect( vec3 boxmin, vec3 boxmax, vec3 o, vec3 d ) {
 /* Calculate how much light reaches
  * current position */
 float lightmarch( vec3 pos ) {
-  vec3 dirToLight = normalize(vec3(u_light_pos) - pos);                  // Vector pointing from Ray to Light Source
+  vec3 dirToLight = normalize(vec3(u_light_pos) - pos);                     // Vector pointing from Ray to Light Source
   float distInBox = intersect( u_bbox_min, u_bbox_max, pos, dirToLight ).y; // Distance from point to edge of the box pointing towards the sun
 
   float step_size = distInBox / u_density_samples;
@@ -134,6 +151,11 @@ void main() {
       float lightEnergy = 0;
       float test_light = 0;
 
+      // Calculate Phase Value:
+      float cos_theta = dot( -d, u_light_pos / 100 );
+      //float phase_val = phase( cos_theta );
+      float phase_val =  1 / (cos_theta / 2.0 + 1.5) ;
+
       /* Step through the box sampling the density
        * and accumulating the result for output to
        * screen */
@@ -146,9 +168,9 @@ void main() {
            * We will lightmarch through the cloud
            * adding up the light for given ray */
           if (val > 0) {
-              float lightTransmittance = lightmarch(v);
+              float light_transmittance = lightmarch(v);
 
-              lightEnergy += val * step_size * transmittance * lightTransmittance /* * phaseVal */;
+              lightEnergy += val * step_size * transmittance * light_transmittance * phase_val;
               transmittance *= exp(-val * step_size * u_lt_abs_cloud);
               if (transmittance < 0.01) { break ; }
           }
