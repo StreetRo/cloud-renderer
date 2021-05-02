@@ -115,7 +115,7 @@ private:
   float lt_abs_sun = 50.f;
   float lt_abs_cloud = 15.f;
   float lt_darkness = 8.f;
-  Vector4f lt_phase = Vector4f(1.5, 1.5, 1.5, 1.5);
+  Vector4f lt_phase = Vector4f(0, 0, 0, 1);
 
   /*
    * Packed Noise
@@ -166,7 +166,7 @@ private:
   float    cloud_scale     = 1;
   Vector3f cloud_offset    = Vector3f( 0, 0, 0 );
   int      density_samples = 10;
-  float    density_thresh  = 6.2;
+  float    density_thresh  = 7.4;
   float    density_mult    = 2.2;
 
   // Default simulation values

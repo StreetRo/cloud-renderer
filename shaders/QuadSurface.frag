@@ -41,18 +41,22 @@ float scale( float v, float lo, float ho, float ln, float hn ) {
 }
 
 /* Henyey-Greenstein helper function for
- * phase() function below */
+ * phase() function below
+ * g <- [-1, 1]
+ *   selects betwween back scattering,
+ *   isotropic, and forward scattering
+ * */
 float hg(float a, float g) {
     float g2 = g*g;
-    return ( 1-g2 ) / ( 4 * 3.1415 * pow( 1 + g2 - 2 * g * a, 1.5) );
+    return ( 1.f-g2 ) / ( 4.0 * 3.1415 * pow( 1.0 + g2 - 2.0 * g * a, 1.5) );
 }
 
 /* This function provides us with a proper rotation
  * towards the sun which will make clouds
  * appear brighter closer to the sun */
 float phase( float a ) {
-    float blend = .5;
-    float hgBlend = hg( a, u_lt_phase.x ) * ( 1 - blend ) + hg( a, -u_lt_phase.y ) * blend;
+    float blend = 0.5;
+    float hgBlend = hg( a, u_lt_phase.x ) * ( 1.0 - blend ) + hg( a, -u_lt_phase.y ) * blend;
     return u_lt_phase.z + hgBlend * u_lt_phase.w;
 }
 
@@ -151,11 +155,6 @@ void main() {
       float lightEnergy = 0;
       float test_light = 0;
 
-      // Calculate Phase Value:
-      float cos_theta = dot( -d, u_light_pos / 100 );
-      //float phase_val = phase( cos_theta );
-      float phase_val =  1 / (cos_theta / 2.0 + 1.5) ;
-
       /* Step through the box sampling the density
        * and accumulating the result for output to
        * screen */
@@ -170,7 +169,9 @@ void main() {
           if (val > 0) {
               float light_transmittance = lightmarch(v);
 
-              phase_val = clamp( phase_val , 0.1, 10 );
+              // Calculate Phase Value:
+              float cos_theta = dot( v, u_light_pos / 100 );
+              float phase_val = phase( cos_theta );
 
               lightEnergy += val * step_size * transmittance * light_transmittance * ( 1 - phase_val );
               transmittance *= exp(-val * step_size * u_lt_abs_cloud);

@@ -182,7 +182,6 @@ void Clouds::init() {
   camera_info.fClip = 10000;
 
   // Try to intelligently figure out the camera target
-
   Vector3D avg_pm_position(0, 0, 0);
 
   CGL::Vector3D target(avg_pm_position.x, avg_pm_position.y / 2,
@@ -461,7 +460,7 @@ void Clouds::initGUI(Screen *screen) {
     fb1->setFontSize(14);
     fb1->setValue( lt_abs_sun );
     fb1->setSpinnable(true);
-    fb1->setCallback([this](int value) { lt_abs_sun = value; });
+    fb1->setCallback([this](float value) { lt_abs_sun = value; });
 
     new Label(panel, "Absorption (Cloud) :", "sans-bold");
 
@@ -471,7 +470,7 @@ void Clouds::initGUI(Screen *screen) {
     fb2->setFontSize(14);
     fb2->setValue( lt_abs_cloud );
     fb2->setSpinnable(true);
-    fb2->setCallback([this](int value) { lt_abs_cloud = value; });
+    fb2->setCallback([this](float value) { lt_abs_cloud = value; });
 
     new Label(panel, "Darkness :", "sans-bold");
 
@@ -481,7 +480,7 @@ void Clouds::initGUI(Screen *screen) {
     fb3->setFontSize(14);
     fb3->setValue( lt_darkness );
     fb3->setSpinnable(true);
-    fb3->setCallback([this](int value) { lt_darkness = value; });
+    fb3->setCallback([this](float value) { lt_darkness = value; });
 
     new Label(panel, "pos x :", "sans-bold");
 
@@ -491,7 +490,7 @@ void Clouds::initGUI(Screen *screen) {
     fb4->setFontSize(14);
     fb4->setValue( pt_light_pos.x() );
     fb4->setSpinnable(true);
-    fb4->setCallback([this](int value) { pt_light_pos.x() = value; });
+    fb4->setCallback([this](float value) { pt_light_pos.x() = value; });
 
     new Label(panel, "pos y :", "sans-bold");
 
@@ -501,7 +500,7 @@ void Clouds::initGUI(Screen *screen) {
     fb5->setFontSize(14);
     fb5->setValue( pt_light_pos.y() );
     fb5->setSpinnable(true);
-    fb5->setCallback([this](int value) { pt_light_pos.y() = value; });
+    fb5->setCallback([this](float value) { pt_light_pos.y() = value; });
 
     new Label(panel, "pos z :", "sans-bold");
 
@@ -511,7 +510,51 @@ void Clouds::initGUI(Screen *screen) {
     fb6->setFontSize(14);
     fb6->setValue( pt_light_pos.z() );
     fb6->setSpinnable(true);
-    fb6->setCallback([this](int value) { pt_light_pos.z() = value; });
+    fb6->setCallback([this](float value) { pt_light_pos.z() = value; });
+
+    new Label(panel, "phase x :", "sans-bold");
+
+    auto fb7 = new FloatBox<float>(panel);
+    fb7->setEditable(true);
+    fb7->setFixedSize(Vector2i(100, 20));
+    fb7->setFontSize(14);
+    fb7->setMinValue( -100 );
+    fb7->setMaxValue( 100 );
+    fb7->setValue( lt_phase.x() );
+    fb7->setSpinnable(true);
+    fb7->setCallback([this](float value) { lt_phase.x() = value; });
+
+    new Label(panel, "phase y :", "sans-bold");
+
+    auto fb8 = new FloatBox<float>(panel);
+    fb8->setEditable(true);
+    fb8->setFixedSize(Vector2i(100, 20));
+    fb8->setFontSize(14);
+    fb8->setMinValue( -100 );
+    fb8->setMaxValue( 100 );
+    fb8->setValue( lt_phase.y() );
+    fb8->setSpinnable(true);
+    fb8->setCallback([this](float value) { lt_phase.y() = value; });
+
+    new Label(panel, "phase z :", "sans-bold");
+
+    auto fb9 = new FloatBox<float>(panel);
+    fb9->setEditable(true);
+    fb9->setFixedSize(Vector2i(100, 20));
+    fb9->setFontSize(14);
+    fb9->setValue( lt_phase.z() );
+    fb9->setSpinnable(true);
+    fb9->setCallback([this](float value) { lt_phase.z() = value; });
+
+    new Label(panel, "phase w :", "sans-bold");
+
+    auto fb10 = new FloatBox<float>(panel);
+    fb10->setEditable(true);
+    fb10->setFixedSize(Vector2i(100, 20));
+    fb10->setFontSize(14);
+    fb10->setValue( lt_phase.w() );
+    fb10->setSpinnable(true);
+    fb10->setCallback([this](float value) { lt_phase.w() = value; });
   }
 
 
