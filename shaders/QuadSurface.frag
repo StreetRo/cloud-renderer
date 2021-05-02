@@ -133,6 +133,11 @@ void main() {
     vec3 o = v_origin;
     vec3 d = v_raydir;
 
+    /* Generate blue sky */
+    // out_color = vec4( 0.39, 0.74, 0.99, 1 );
+    float blue = scale( v_position.y, -1, 1, 0.4, 0.6 );
+    out_color = vec4( vec3( 0.39, 0.74, 0.99 ) - blue, 1 );
+
     /* Check for ray-box intersection
      * returning distance to the box,
      * distance traveled in the box, and
@@ -153,7 +158,6 @@ void main() {
       // Light marching variables:
       float transmittance = 1;
       float lightEnergy = 0;
-      float test_light = 0;
 
       /* Step through the box sampling the density
        * and accumulating the result for output to
@@ -189,7 +193,7 @@ void main() {
        * return float4(col,0); */
 
       vec3 cloudCol = lightEnergy * vec3( 1, 1, 1 );
-      vec3 col = vec3( 0.39, 0.74, 0.99 ) * transmittance + cloudCol;
+      vec3 col = out_color.xyz * transmittance + cloudCol;
 
       out_color = vec4( col, 1 );
       // out_color = vec4( 0, 0, 0, val - test_light * 0.5);
