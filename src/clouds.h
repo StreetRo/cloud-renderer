@@ -110,7 +110,7 @@ private:
   /*
    * Lighting
    */
-  Vector3f pt_light_pos = Vector3f( 0, 100, -10 );
+  Vector3f pt_light_pos = Vector3f( 50, 25, 0 );
 
   float lt_abs_sun = 50.f;
   float lt_abs_cloud = 15.f;
@@ -158,7 +158,7 @@ private:
   MatrixXf bbox_pts  = MatrixXf( 3, 24 );
   MatrixXf bbox_tris = MatrixXf( 3, 36 );
   Vector3f bbox_min  = Vector3f( 0.f, 0.f, 0.f );
-  Vector3f bbox_max  = Vector3f( 10.f, 5.f, 10.f );
+  Vector3f bbox_max  = Vector3f( 100.f, 20.f, 100.f );
   
   /*
    * Cloud Parameters

@@ -134,18 +134,56 @@ float lightmarch( vec3 pos ) {
       totalDensity += max(0, sampleDensity(vec4( pos, 1 )) * step_size);
   }
 
-  float transmittance = exp(-totalDensity * u_lt_abs_sun);
+  float transmittance = exp(-totalDensity * u_lt_abs_sun * 1000);
   return u_lt_darkness + transmittance * (1. - u_lt_darkness * 0.001);
 }
 
+
+bool sphereIntersect( vec3 o, vec3 d, vec3 center ) {
+  vec3 omc = o - center;
+  float a = dot( d, d );
+  float b = dot( 2 * omc, d );
+  float c = dot( omc, omc ) - 5 * 5;
+
+  float det = b * b - 4.f * a * c;
+
+  if ( det < 0.f ) { return false; }
+
+  float sqrt_det = sqrt( det );
+
+  float t1 = ( -b + sqrt_det ) / ( 2.f * a );
+  float t2 = ( -b - sqrt_det ) / ( 2.f * a );
+
+  if ( t2 < t1 ) {
+    float tmp = t1;
+    t1 = t2;
+    t2 = tmp;
+  }
+
+  // only care about intersection
+  // if ( r.min_t <= t1 && t1 <= r.max_t ) {
+    // return true;
+  // }
+
+  return true;
+}
+
+
 void main() {
+    float circleGradient = sin( 3.141592 * (v_position.x + 1) / 2) * sin( 3.141592 * (v_position.y + 1) / 2);
+
     vec3 o = v_origin;
-    vec3 d = v_raydir;
+    vec3 d = normalize( v_raydir );
 
     /* Generate blue sky */
     // out_color = vec4( 0.39, 0.74, 0.99, 1 );
     float blue = scale( v_position.y, -1, 1, 0.4, 0.6 );
     out_color = vec4( vec3( 0.39, 0.74, 0.99 ) - blue, 1 );
+
+    if ( sphereIntersect( o, d, u_light_pos ) ) {
+      out_color = vec4( 1.0, 0.9, 0.1, 1 ) - blue;
+
+    }
 
     /* Check for ray-box intersection
      * returning distance to the box,
