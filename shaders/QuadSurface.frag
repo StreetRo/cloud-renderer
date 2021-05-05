@@ -78,7 +78,16 @@ float sampleDensity( vec4 pos ) {
     shape_noise = shape_noise - 1;
     shape_noise = scale( tex.r, shape_noise, 1, 0, 1 );
 
-    return max( 0, shape_noise - u_density_thresh * 0.1 ) * u_density_mult * 0.1;
+    // Don't sample close to edges of box
+    float PI = 3.14;
+    float xfilter = sin( PI * pos.x / u_bbox_max.x );
+    xfilter *= xfilter;
+    float yfilter = sin( PI * pos.y / u_bbox_max.y );
+    yfilter *= yfilter;
+    float zfilter = sin( PI * pos.z / u_bbox_max.z );
+    zfilter *= zfilter;
+
+    return max( 0, shape_noise - u_density_thresh * 0.1 ) * u_density_mult * 0.1 * xfilter * yfilter * zfilter;
 }
 
 /* Check for ray-box intersecation returning:
@@ -174,7 +183,7 @@ void main() {
               float light_transmittance = lightmarch(v);
 
               // Calculate Phase Value:
-              float cos_theta = dot( v, u_light_pos / 100 );
+              float cos_theta = dot( v, normalize( u_light_pos ) );
               float phase_val = phase( cos_theta );
 
               lightEnergy += val * step_size * transmittance * light_transmittance * ( 1 - phase_val );
