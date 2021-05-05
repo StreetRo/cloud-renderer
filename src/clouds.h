@@ -110,12 +110,12 @@ private:
   /*
    * Lighting
    */
-  Vector3f pt_light_pos = Vector3f( 0, 100, -10 );
+  Vector3f pt_light_pos = Vector3f( 50, 10, 0 );
 
   float lt_abs_sun = 50.f;
   float lt_abs_cloud = 15.f;
   float lt_darkness = 8.f;
-  Vector4f lt_phase = Vector4f(0, 0, 0, 1);
+  Vector4f lt_phase = Vector4f(0, 0, 100, 1);
 
   /*
    * Packed Noise
@@ -158,12 +158,12 @@ private:
   MatrixXf bbox_pts  = MatrixXf( 3, 24 );
   MatrixXf bbox_tris = MatrixXf( 3, 36 );
   Vector3f bbox_min  = Vector3f( 0.f, 0.f, 0.f );
-  Vector3f bbox_max  = Vector3f( 10.f, 5.f, 10.f );
+  Vector3f bbox_max  = Vector3f( 100.f, 10.f, 100.f );
   
   /*
    * Cloud Parameters
    */
-  float    cloud_scale     = 1;
+  float    cloud_scale     = 0.5;
   Vector3f cloud_offset    = Vector3f( 0, 0, 0 );
   int      density_samples = 10;
   float    density_thresh  = 7.4;

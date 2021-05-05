@@ -18,7 +18,6 @@ uniform float u_density_thresh;
 uniform float u_density_mult;
 uniform int u_density_samples;
 
-
 /*
  * Light Parameters
  */
@@ -66,7 +65,7 @@ float phase( float a ) {
 float sampleDensity( vec4 pos ) {
     // vec3 xyz = pos.xyz;
     // vec3 xyz = pos.xyz + u_cloud_offset * 0.1;
-    vec3 xyz = pos.xyz * u_cloud_scale * 0.1 + u_cloud_offset * 0.1;
+    vec3 xyz = pos.xyz * u_cloud_scale * 0.01 + u_cloud_offset * 0.1;
     vec4 tex = texture( u_noise, ( xyz.xyz + 0.5 ) );
 
     // Generate higher frequency worley using same texture
@@ -74,7 +73,7 @@ float sampleDensity( vec4 pos ) {
     float freq3 = texture( u_noise, 16 * ( xyz.xyz + 0.5 ) ).g;
 
     // Fractional Brownion Motion to decay the higher freq noise
-    float shape_noise = tex.g * (0.625) + freq2 * (0.125) + freq3 * (0.0625);
+    float shape_noise = tex.g * (0.625) + freq2 * (0.25) + freq3 * (0.125);
     shape_noise = shape_noise - 1;
     shape_noise = scale( tex.r, shape_noise, 1, 0, 1 );
 

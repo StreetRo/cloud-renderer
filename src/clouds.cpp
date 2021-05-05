@@ -182,11 +182,8 @@ void Clouds::init() {
   camera_info.fClip = 10000;
 
   // Try to intelligently figure out the camera target
-  Vector3D avg_pm_position(0, 0, 0);
-
-  CGL::Vector3D target(avg_pm_position.x, avg_pm_position.y / 2,
-                       avg_pm_position.z);
-  CGL::Vector3D c_dir(0., 0., 0.);
+  CGL::Vector3D target( 50, 20, 100 );
+  CGL::Vector3D c_dir( 0, 0, 0 );
   canonical_view_distance = 2;
   scroll_rate = canonical_view_distance / 10;
 
@@ -526,7 +523,7 @@ void Clouds::initGUI(Screen *screen) {
     fb6->setSpinnable(true);
     fb6->setCallback([this](float value) { pt_light_pos.z() = value; });
 
-    new Label(popup, "phase x :", "sans-bold");
+    new Label(popup, "forward scatter :", "sans-bold");
 
     auto fb7 = new FloatBox<float>(popup);
     fb7->setEditable(true);
@@ -538,7 +535,7 @@ void Clouds::initGUI(Screen *screen) {
     fb7->setSpinnable(true);
     fb7->setCallback([this](float value) { lt_phase.x() = value; });
 
-    new Label(popup, "phase y :", "sans-bold");
+    new Label(popup, "back scatter :", "sans-bold");
 
     auto fb8 = new FloatBox<float>(popup);
     fb8->setEditable(true);
@@ -550,7 +547,7 @@ void Clouds::initGUI(Screen *screen) {
     fb8->setSpinnable(true);
     fb8->setCallback([this](float value) { lt_phase.y() = value; });
 
-    new Label(popup, "phase z :", "sans-bold");
+    new Label(popup, "multiplier :", "sans-bold");
 
     auto fb9 = new FloatBox<float>(popup);
     fb9->setEditable(true);
@@ -560,7 +557,7 @@ void Clouds::initGUI(Screen *screen) {
     fb9->setSpinnable(true);
     fb9->setCallback([this](float value) { lt_phase.z() = value; });
 
-    new Label(popup, "phase w :", "sans-bold");
+    new Label(popup, "offset :", "sans-bold");
 
     auto fb10 = new FloatBox<float>(popup);
     fb10->setEditable(true);
