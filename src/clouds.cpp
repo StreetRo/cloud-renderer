@@ -443,7 +443,7 @@ void Clouds::initGUI(Screen *screen) {
   }
   */
 
-  new Label(window, "Light Properties", "sans-bold");
+  //new Label(window, "Light Properties", "sans-bold");
   {
     Widget *panel = new Widget(window);
     GridLayout *layout =
@@ -452,39 +452,53 @@ void Clouds::initGUI(Screen *screen) {
     layout->setSpacing(0, 10);
     panel->setLayout(layout);
 
-    new Label(panel, "Absorption (Sun) :", "sans-bold");
+      new Label(window, "Light Properties", "sans-bold");
+      PopupButton *popupBtn = new PopupButton(window, "Popup", ENTYPO_ICON_EXPORT);
+      Popup *popup = popupBtn->popup();
+      popup->setLayout(new GroupLayout());
+      new Label(popup, "Absorption (Sun) :", "sans-bold");
+      auto fb1 = new FloatBox<float>(popup);
+      fb1->setEditable(true);
+      fb1->setFixedSize(Vector2i(100, 20));
+      fb1->setFontSize(14);
+      fb1->setValue( lt_abs_sun );
+      fb1->setSpinnable(true);
+      fb1->setCallback([this](float value) { lt_abs_sun = value; });
+      // popup right
+      new Label(popup, "Absorption (Cloud) :", "sans-bold");
+      auto fb2 = new FloatBox<float>(popup);
+      fb2->setEditable(true);
+      fb2->setFixedSize(Vector2i(100, 20));
+      fb2->setFontSize(14);
+      fb2->setValue( lt_abs_cloud );
+      fb2->setSpinnable(true);
+      fb2->setCallback([this](float value) { lt_abs_cloud = value; });
 
-    auto fb1 = new FloatBox<float>(panel);
-    fb1->setEditable(true);
-    fb1->setFixedSize(Vector2i(100, 20));
-    fb1->setFontSize(14);
-    fb1->setValue( lt_abs_sun );
-    fb1->setSpinnable(true);
-    fb1->setCallback([this](float value) { lt_abs_sun = value; });
+      new Label(popup, "Darkness :", "sans-bold");
 
-    new Label(panel, "Absorption (Cloud) :", "sans-bold");
+      auto fb3 = new FloatBox<float>(popup);
+      fb3->setEditable(true);
+      fb3->setFixedSize(Vector2i(100, 20));
+      fb3->setFontSize(14);
+      fb3->setValue( lt_darkness );
+      fb3->setSpinnable(true);
+      fb3->setCallback([this](float value) { lt_darkness = value; });
 
-    auto fb2 = new FloatBox<float>(panel);
-    fb2->setEditable(true);
-    fb2->setFixedSize(Vector2i(100, 20));
-    fb2->setFontSize(14);
-    fb2->setValue( lt_abs_cloud );
-    fb2->setSpinnable(true);
-    fb2->setCallback([this](float value) { lt_abs_cloud = value; });
 
-    new Label(panel, "Darkness :", "sans-bold");
+    //new Label(panel, "Absorption (Sun) :", "sans-bold");
 
-    auto fb3 = new FloatBox<float>(panel);
-    fb3->setEditable(true);
-    fb3->setFixedSize(Vector2i(100, 20));
-    fb3->setFontSize(14);
-    fb3->setValue( lt_darkness );
-    fb3->setSpinnable(true);
-    fb3->setCallback([this](float value) { lt_darkness = value; });
+    //auto fb1 = new FloatBox<float>(panel);
 
-    new Label(panel, "pos x :", "sans-bold");
 
-    auto fb4 = new FloatBox<float>(panel);
+    //new Label(panel, "Absorption (Cloud) :", "sans-bold");
+
+
+
+
+
+    new Label(popup, "pos x :", "sans-bold");
+
+    auto fb4 = new FloatBox<float>(popup);
     fb4->setEditable(true);
     fb4->setFixedSize(Vector2i(100, 20));
     fb4->setFontSize(14);
@@ -492,9 +506,9 @@ void Clouds::initGUI(Screen *screen) {
     fb4->setSpinnable(true);
     fb4->setCallback([this](float value) { pt_light_pos.x() = value; });
 
-    new Label(panel, "pos y :", "sans-bold");
+    new Label(popup, "pos y :", "sans-bold");
 
-    auto fb5 = new FloatBox<float>(panel);
+    auto fb5 = new FloatBox<float>(popup);
     fb5->setEditable(true);
     fb5->setFixedSize(Vector2i(100, 20));
     fb5->setFontSize(14);
@@ -502,9 +516,9 @@ void Clouds::initGUI(Screen *screen) {
     fb5->setSpinnable(true);
     fb5->setCallback([this](float value) { pt_light_pos.y() = value; });
 
-    new Label(panel, "pos z :", "sans-bold");
+    new Label(popup, "pos z :", "sans-bold");
 
-    auto fb6 = new FloatBox<float>(panel);
+    auto fb6 = new FloatBox<float>(popup);
     fb6->setEditable(true);
     fb6->setFixedSize(Vector2i(100, 20));
     fb6->setFontSize(14);
@@ -512,9 +526,9 @@ void Clouds::initGUI(Screen *screen) {
     fb6->setSpinnable(true);
     fb6->setCallback([this](float value) { pt_light_pos.z() = value; });
 
-    new Label(panel, "phase x :", "sans-bold");
+    new Label(popup, "phase x :", "sans-bold");
 
-    auto fb7 = new FloatBox<float>(panel);
+    auto fb7 = new FloatBox<float>(popup);
     fb7->setEditable(true);
     fb7->setFixedSize(Vector2i(100, 20));
     fb7->setFontSize(14);
@@ -524,9 +538,9 @@ void Clouds::initGUI(Screen *screen) {
     fb7->setSpinnable(true);
     fb7->setCallback([this](float value) { lt_phase.x() = value; });
 
-    new Label(panel, "phase y :", "sans-bold");
+    new Label(popup, "phase y :", "sans-bold");
 
-    auto fb8 = new FloatBox<float>(panel);
+    auto fb8 = new FloatBox<float>(popup);
     fb8->setEditable(true);
     fb8->setFixedSize(Vector2i(100, 20));
     fb8->setFontSize(14);
@@ -536,9 +550,9 @@ void Clouds::initGUI(Screen *screen) {
     fb8->setSpinnable(true);
     fb8->setCallback([this](float value) { lt_phase.y() = value; });
 
-    new Label(panel, "phase z :", "sans-bold");
+    new Label(popup, "phase z :", "sans-bold");
 
-    auto fb9 = new FloatBox<float>(panel);
+    auto fb9 = new FloatBox<float>(popup);
     fb9->setEditable(true);
     fb9->setFixedSize(Vector2i(100, 20));
     fb9->setFontSize(14);
@@ -546,9 +560,9 @@ void Clouds::initGUI(Screen *screen) {
     fb9->setSpinnable(true);
     fb9->setCallback([this](float value) { lt_phase.z() = value; });
 
-    new Label(panel, "phase w :", "sans-bold");
+    new Label(popup, "phase w :", "sans-bold");
 
-    auto fb10 = new FloatBox<float>(panel);
+    auto fb10 = new FloatBox<float>(popup);
     fb10->setEditable(true);
     fb10->setFixedSize(Vector2i(100, 20));
     fb10->setFontSize(14);
@@ -566,10 +580,13 @@ void Clouds::initGUI(Screen *screen) {
     layout->setColAlignment({Alignment::Maximum, Alignment::Fill});
     layout->setSpacing(0, 10);
     panel->setLayout(layout);
+    PopupButton *popupBtn = new PopupButton(window, "Popup", ENTYPO_ICON_EXPORT);
+    Popup *popup = popupBtn->popup();
+    popup->setLayout(new GroupLayout());
 
-    new Label(panel, "num boxes :", "sans-bold");
+    new Label(popup, "num boxes :", "sans-bold");
 
-    num_cells_box = new IntBox<int>(panel);
+    num_cells_box = new IntBox<int>(popup);
     num_cells_box->setEditable(true);
     num_cells_box->setFixedSize(Vector2i(100, 20));
     num_cells_box->setFontSize(14);
@@ -579,9 +596,9 @@ void Clouds::initGUI(Screen *screen) {
     num_cells_box->setSpinnable(true);
     num_cells_box->setCallback([this](int value) { num_boxes = value; });
 
-    new Label(panel, "num cells :", "sans-bold");
+    new Label(popup, "num cells :", "sans-bold");
 
-    num_cells_box = new IntBox<int>(panel);
+    num_cells_box = new IntBox<int>(popup);
     num_cells_box->setEditable(true);
     num_cells_box->setFixedSize(Vector2i(100, 20));
     num_cells_box->setFontSize(14);
@@ -595,9 +612,9 @@ void Clouds::initGUI(Screen *screen) {
         generateDensityTexture();
     });
 
-    new Label(panel, "pt size :", "sans-bold");
+    new Label(popup, "pt size :", "sans-bold");
 
-    auto pt_size_box = new FloatBox<float>(panel);
+    auto pt_size_box = new FloatBox<float>(popup);
     pt_size_box->setEditable(true);
     pt_size_box->setFixedSize(Vector2i(100, 20));
     pt_size_box->setFontSize(14);
@@ -618,9 +635,11 @@ void Clouds::initGUI(Screen *screen) {
     layout->setColAlignment({Alignment::Maximum, Alignment::Fill});
     layout->setSpacing(0, 10);
     panel->setLayout(layout);
-
-    new Label(panel, "length x :", "sans-bold");
-    FloatBox<double> *fb1 = new FloatBox<double>(panel);
+      PopupButton *popupBtn = new PopupButton(window, "Popup", ENTYPO_ICON_EXPORT);
+      Popup *popup = popupBtn->popup();
+      popup->setLayout(new GroupLayout());
+    new Label(popup, "length x :", "sans-bold");
+    FloatBox<double> *fb1 = new FloatBox<double>(popup);
     fb1->setEditable(true);
     fb1->setFixedSize(Vector2i(100, 20));
     fb1->setFontSize(14);
@@ -632,8 +651,8 @@ void Clouds::initGUI(Screen *screen) {
         generateBoundingBox();
     });
 
-    new Label(panel, "length y :", "sans-bold");
-    FloatBox<double> *fb2 = new FloatBox<double>(panel);
+    new Label(popup, "length y :", "sans-bold");
+    FloatBox<double> *fb2 = new FloatBox<double>(popup);
     fb2->setEditable(true);
     fb2->setFixedSize(Vector2i(100, 20));
     fb2->setFontSize(14);
@@ -645,8 +664,8 @@ void Clouds::initGUI(Screen *screen) {
         generateBoundingBox();
     });
 
-    new Label(panel, "length z :", "sans-bold");
-    FloatBox<double> *fb3 = new FloatBox<double>(panel);
+    new Label(popup, "length z :", "sans-bold");
+    FloatBox<double> *fb3 = new FloatBox<double>(popup);
     fb3->setEditable(true);
     fb3->setFixedSize(Vector2i(100, 20));
     fb3->setFontSize(14);
@@ -667,9 +686,11 @@ void Clouds::initGUI(Screen *screen) {
     layout->setColAlignment({Alignment::Maximum, Alignment::Fill});
     layout->setSpacing(0, 10);
     panel->setLayout(layout);
-
-    new Label(panel, "Cloud scale :", "sans-bold");
-    FloatBox<double> *fb1 = new FloatBox<double>(panel);
+      PopupButton *popupBtn = new PopupButton(window, "Popup", ENTYPO_ICON_EXPORT);
+      Popup *popup = popupBtn->popup();
+      popup->setLayout(new GroupLayout());
+    new Label(popup, "Cloud scale :", "sans-bold");
+    FloatBox<double> *fb1 = new FloatBox<double>(popup);
     fb1->setEditable(true);
     fb1->setFixedSize(Vector2i(100, 20));
     fb1->setFontSize(14);
@@ -680,8 +701,8 @@ void Clouds::initGUI(Screen *screen) {
         cloud_scale = value;
     });
 
-    new Label(panel, "Density mult :", "sans-bold");
-    FloatBox<double> *fb2 = new FloatBox<double>(panel);
+    new Label(popup, "Density mult :", "sans-bold");
+    FloatBox<double> *fb2 = new FloatBox<double>(popup);
     fb2->setEditable(true);
     fb2->setFixedSize(Vector2i(100, 20));
     fb2->setFontSize(14);
@@ -692,8 +713,8 @@ void Clouds::initGUI(Screen *screen) {
         density_mult = value;
     });
 
-    new Label(panel, "Density thresh :", "sans-bold");
-    FloatBox<double> *fb3 = new FloatBox<double>(panel);
+    new Label(popup, "Density thresh :", "sans-bold");
+    FloatBox<double> *fb3 = new FloatBox<double>(popup);
     fb3->numberFormat("%2f");
     fb3->setEditable(true);
     fb3->setFixedSize(Vector2i(100, 20));
@@ -705,8 +726,8 @@ void Clouds::initGUI(Screen *screen) {
         density_thresh = value;
     });
 
-    new Label(panel, "Density samples :", "sans-bold");
-    IntBox<int> *fb4 = new IntBox<int>(panel);
+    new Label(popup, "Density samples :", "sans-bold");
+    IntBox<int> *fb4 = new IntBox<int>(popup);
     fb4->setEditable(true);
     fb4->setFixedSize(Vector2i(100, 20));
     fb4->setFontSize(14);
@@ -718,8 +739,8 @@ void Clouds::initGUI(Screen *screen) {
         density_samples = value;
     });
 
-    new Label(panel, "Offset x :", "sans-bold");
-    IntBox<int> *fb5 = new IntBox<int>(panel);
+    new Label(popup, "Offset x :", "sans-bold");
+    IntBox<int> *fb5 = new IntBox<int>(popup);
     fb5->setEditable(true);
     fb5->setFixedSize(Vector2i(100, 20));
     fb5->setFontSize(10);
@@ -730,8 +751,8 @@ void Clouds::initGUI(Screen *screen) {
         cloud_offset.x() = value;
     });
 
-    new Label(panel, "Offset y :", "sans-bold");
-    IntBox<int> *fb6 = new IntBox<int>(panel);
+    new Label(popup, "Offset y :", "sans-bold");
+    IntBox<int> *fb6 = new IntBox<int>(popup);
     fb6->setEditable(true);
     fb6->setFixedSize(Vector2i(100, 20));
     fb6->setFontSize(10);
@@ -742,8 +763,8 @@ void Clouds::initGUI(Screen *screen) {
         cloud_offset.y() = value;
     });
 
-    new Label(panel, "Offset z :", "sans-bold");
-    IntBox<int> *fb7 = new IntBox<int>(panel);
+    new Label(popup, "Offset z :", "sans-bold");
+    IntBox<int> *fb7 = new IntBox<int>(popup);
     fb7->setEditable(true);
     fb7->setFixedSize(Vector2i(100, 20));
     fb7->setFontSize(10);
