@@ -223,7 +223,7 @@ void Clouds::init() {
 
 bool Clouds::isAlive() { return is_alive; }
 
-void Clouds::update( double dt ) { }
+void Clouds::update( double dt_val ) { cloud_offset.z() += dt_val / 10.f; }
 
 void Clouds::updateGUI( double avgFPS ) {
   // Update GUI
