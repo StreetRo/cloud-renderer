@@ -182,7 +182,7 @@ void Clouds::init() {
   camera_info.fClip = 10000;
 
   // Try to intelligently figure out the camera target
-  CGL::Vector3D target( 50, 20, 100 );
+  CGL::Vector3D target( 250, -20, 100 );
   CGL::Vector3D c_dir( 0, 0, 0 );
   canonical_view_distance = 2;
   scroll_rate = canonical_view_distance / 10;

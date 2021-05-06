@@ -157,16 +157,16 @@ private:
    */
   MatrixXf bbox_pts  = MatrixXf( 3, 24 );
   MatrixXf bbox_tris = MatrixXf( 3, 36 );
-  Vector3f bbox_min  = Vector3f( 0.f, 0.f, 0.f );
-  Vector3f bbox_max  = Vector3f( 100.f, 10.f, 100.f );
+  Vector3f bbox_min  = Vector3f( 0.f, 0.f, -500.f );
+  Vector3f bbox_max  = Vector3f( 500.f, 20.f, 200.f );
   
   /*
    * Cloud Parameters
    */
   float    cloud_scale     = 0.5;
   Vector3f cloud_offset    = Vector3f( 0, 0, 0 );
-  int      density_samples = 10;
-  float    density_thresh  = 7.4;
+  int      density_samples = 30;
+  float    density_thresh  = 7.5;
   float    density_mult    = 2.2;
 
   // Default simulation values
