@@ -46,8 +46,8 @@ float scale( float v, float lo, float ho, float ln, float hn ) {
  *   isotropic, and forward scattering
  * */
 float hg(float a, float g) {
-    float g2 = g*g;
-    return ( 1.f-g2 ) / ( 4.0 * 3.1415 * pow( 1.0 + g2 - 2.0 * g * a, 1.5) );
+    float g2 = g * g;
+    return ( 1.0 - g2 ) / ( 4.0 * 3.1415 * pow( 1.0 + g2 - 2.0 * g * a, 1.5) );
 }
 
 /* This function provides us with a proper rotation
@@ -55,7 +55,7 @@ float hg(float a, float g) {
  * appear brighter closer to the sun */
 float phase( float a ) {
     float blend = 0.5;
-    float hgBlend = hg( a, u_lt_phase.x ) * ( 1.0 - blend ) + hg( a, -u_lt_phase.y ) * blend;
+    float hgBlend = hg( a, u_lt_phase.x * 0.01 ) * ( 1.0 - blend ) + hg( a, -u_lt_phase.y * 0.01 ) * blend;
     return u_lt_phase.z + hgBlend * u_lt_phase.w;
 }
 
@@ -86,7 +86,7 @@ float sampleDensity( vec4 pos ) {
     float zfilter = sin( PI * pos.z / u_bbox_max.z );
     zfilter *= zfilter;
 
-    return max( 0, shape_noise - u_density_thresh * 0.1 ) * u_density_mult * 0.1 * xfilter * yfilter * zfilter;
+    return max( 0, shape_noise - u_density_thresh * 0.1 ) * u_density_mult * 0.01 * xfilter * yfilter * zfilter;
 }
 
 /* Check for ray-box intersecation returning:
