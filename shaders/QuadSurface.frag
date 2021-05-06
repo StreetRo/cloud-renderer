@@ -185,14 +185,14 @@ void main() {
               float cos_theta = dot( v, normalize( u_light_pos ) );
               float phase_val = phase( cos_theta );
 
-              lightEnergy += val * step_size * transmittance * light_transmittance * phase_val;
+              lightEnergy += val * step_size * transmittance * light_transmittance * phase_val * ( v.y / u_bbox_max.y );
               transmittance *= exp(-val * step_size * u_lt_abs_cloud);
               if (transmittance < 0.01) { break ; }
           }
           d_travd += step_size;
       }
 
-      val = exp( -( 1 - val ) );
+      // val = exp( -( 1 - val ) );
 
       /* Final out color mixing:
        * vec3 backgroundCol = tex2D(_MainTex,i.uv);
