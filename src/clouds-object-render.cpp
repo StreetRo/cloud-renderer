@@ -172,6 +172,8 @@ void Clouds::drawQuadSurface( GLShader &shader ) {
 
   shader.setUniform( "u_noise", packed_noise_unit, false );
 
+  shader.setUniform("u_texture_cubemap", 5, false);
+
   shader.setUniform( "u_cloud_scale", cloud_scale );
   shader.setUniform( "u_cloud_offset", cloud_offset );
   shader.setUniform( "u_density_thresh", density_thresh );

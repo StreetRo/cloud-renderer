@@ -67,12 +67,18 @@ void Clouds::load_textures() {
   std::cout << "Texture 4 loaded with size: " << m_gl_texture_4_size << std::endl;
   
   std::vector<std::string> cubemap_fnames = {
-    m_project_root + "/textures/cube/posx.jpg",
-    m_project_root + "/textures/cube/negx.jpg",
-    m_project_root + "/textures/cube/posy.jpg",
-    m_project_root + "/textures/cube/negy.jpg",
-    m_project_root + "/textures/cube/posz.jpg",
-    m_project_root + "/textures/cube/negz.jpg"
+    m_project_root + "/textures/backdrop/night_sky.jpg",
+    m_project_root + "/textures/backdrop/night_sky.jpg",
+    m_project_root + "/textures/backdrop/night_sky.jpg",
+    m_project_root + "/textures/backdrop/night_sky.jpg",
+    m_project_root + "/textures/backdrop/night_sky.jpg",
+    m_project_root + "/textures/backdrop/night_sky.jpg",
+    // m_project_root + "/textures/cube/posx.jpg",
+    // m_project_root + "/textures/cube/negx.jpg",
+    // m_project_root + "/textures/cube/posy.jpg",
+    // m_project_root + "/textures/cube/negy.jpg",
+    // m_project_root + "/textures/cube/posz.jpg",
+    // m_project_root + "/textures/cube/negz.jpg"
   };
   
   load_cubemap(5, m_gl_cubemap_tex, cubemap_fnames);
@@ -182,8 +188,8 @@ void Clouds::init() {
   camera_info.fClip = 10000;
 
   // Try to intelligently figure out the camera target
-  CGL::Vector3D target( 250, -20, 100 );
-  CGL::Vector3D c_dir( 0, 0, 0 );
+  CGL::Vector3D target( 1000, -100, 100 );
+  CGL::Vector3D c_dir( 0, -0.25, 0 );
   canonical_view_distance = 2;
   scroll_rate = canonical_view_distance / 10;
 

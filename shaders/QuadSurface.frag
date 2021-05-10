@@ -1,5 +1,7 @@
 #version 330
 
+uniform samplerCube u_texture_cubemap;
+
 uniform vec3 u_light_pos;
 uniform vec3 u_light_intensity;
 
@@ -141,10 +143,12 @@ void main() {
     vec3 o = v_origin;
     vec3 d = v_raydir;
 
+    out_color = texture( u_texture_cubemap, vec3( (v_position + 1) ) );
+
     /* Generate blue sky */
     // out_color = vec4( 0.39, 0.74, 0.99, 1 );
-    float blue = scale( v_position.y, -1, 1, 0.4, 0.6 );
-    out_color = vec4( vec3( 0.39, 0.74, 0.99 ) - blue, 1 );
+    // float blue = scale( v_position.y, -1, 1, 0.4, 0.6 );
+    // out_color = vec4( vec3( 0.39, 0.74, 0.99 ) - blue, 1 );
 
     /* Check for ray-box intersection
      * returning distance to the box,

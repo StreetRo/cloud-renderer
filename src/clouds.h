@@ -158,7 +158,7 @@ private:
   MatrixXf bbox_pts  = MatrixXf( 3, 24 );
   MatrixXf bbox_tris = MatrixXf( 3, 36 );
   Vector3f bbox_min  = Vector3f( 0.f, 0.f, -500.f );
-  Vector3f bbox_max  = Vector3f( 500.f, 20.f, 200.f );
+  Vector3f bbox_max  = Vector3f( 2000.f, 40.f, 200.f );
   
   /*
    * Cloud Parameters
